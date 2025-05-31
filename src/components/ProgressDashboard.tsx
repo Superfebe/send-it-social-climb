@@ -3,35 +3,59 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Target, Calendar, Trophy } from 'lucide-react';
+import { TrendingUp, Target, Calendar, Trophy, Star, Mountain, Timer } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { GradePyramidChart } from './charts/GradePyramidChart';
 import { ProgressOverTimeChart } from './charts/ProgressOverTimeChart';
 import { SendRateChart } from './charts/SendRateChart';
 import { ClimbTypeDistribution } from './charts/ClimbTypeDistribution';
+import { MonthlyVolumeChart } from './charts/MonthlyVolumeChart';
+import { GradeProgressionChart } from './charts/GradeProgressionChart';
+import { AttemptsAnalysisChart } from './charts/AttemptsAnalysisChart';
+import { StyleAnalysisChart } from './charts/StyleAnalysisChart';
 
 interface ProgressStats {
   totalClimbs: number;
+  totalSessions: number;
+  avgClimbsPerSession: number;
   hardestGrades: Record<string, string>;
   averageGrades: Record<string, string>;
   sendRate: number;
   flashRate: number;
+  onsightRate: number;
   outdoorVsIndoor: { outdoor: number; indoor: number };
   monthlyTrends: Array<{ month: string; climbs: number; avgGrade: number }>;
+  monthlyVolume: Array<{ month: string; climbs: number; sessions: number }>;
   gradePyramid: Array<{ grade: string; count: number; type: string }>;
+  gradeProgression: Array<{ date: string; hardestGrade: number; avgGrade: number; type: string }>;
+  attemptsDistribution: Array<{ attempts: string; count: number }>;
+  styleDistribution: Array<{ style: string; count: number; percentage: number }>;
+  currentStreak: number;
+  longestStreak: number;
+  favoriteGrades: Array<{ grade: string; count: number }>;
 }
 
 export function ProgressDashboard() {
   const [stats, setStats] = useState<ProgressStats>({
     totalClimbs: 0,
+    totalSessions: 0,
+    avgClimbsPerSession: 0,
     hardestGrades: {},
     averageGrades: {},
     sendRate: 0,
     flashRate: 0,
+    onsightRate: 0,
     outdoorVsIndoor: { outdoor: 0, indoor: 0 },
     monthlyTrends: [],
-    gradePyramid: []
+    monthlyVolume: [],
+    gradePyramid: [],
+    gradeProgression: [],
+    attemptsDistribution: [],
+    styleDistribution: [],
+    currentStreak: 0,
+    longestStreak: 0,
+    favoriteGrades: []
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -78,20 +102,38 @@ export function ProgressDashboard() {
   const processProgressData = (ascents: any[]): ProgressStats => {
     const stats: ProgressStats = {
       totalClimbs: ascents.length,
+      totalSessions: 0,
+      avgClimbsPerSession: 0,
       hardestGrades: {},
       averageGrades: {},
       sendRate: 0,
       flashRate: 0,
+      onsightRate: 0,
       outdoorVsIndoor: { outdoor: 0, indoor: 0 },
       monthlyTrends: [],
-      gradePyramid: []
+      monthlyVolume: [],
+      gradePyramid: [],
+      gradeProgression: [],
+      attemptsDistribution: [],
+      styleDistribution: [],
+      currentStreak: 0,
+      longestStreak: 0,
+      favoriteGrades: []
     };
+
+    // Calculate session count (unique dates)
+    const uniqueDates = [...new Set(ascents.map(a => a.date_climbed))];
+    stats.totalSessions = uniqueDates.length;
+    stats.avgClimbsPerSession = stats.totalSessions > 0 ? stats.totalClimbs / stats.totalSessions : 0;
 
     // Calculate send rates
     const successfulClimbs = ascents.filter(a => a.attempts > 0);
     const flashClimbs = ascents.filter(a => a.style === 'flash');
+    const onsightClimbs = ascents.filter(a => a.style === 'onsight');
+    
     stats.sendRate = ascents.length > 0 ? (successfulClimbs.length / ascents.length) * 100 : 0;
     stats.flashRate = ascents.length > 0 ? (flashClimbs.length / ascents.length) * 100 : 0;
+    stats.onsightRate = ascents.length > 0 ? (onsightClimbs.length / ascents.length) * 100 : 0;
 
     // Calculate outdoor vs indoor
     ascents.forEach(ascent => {
@@ -115,26 +157,36 @@ export function ProgressDashboard() {
     Object.keys(typeGroups).forEach(type => {
       const grades = typeGroups[type].map(a => a.routes?.grade).filter(Boolean);
       if (grades.length > 0) {
-        // Simple grade comparison - in real app you'd want proper grade conversion
         stats.hardestGrades[type] = grades.sort().pop() || '';
       }
     });
 
-    // Calculate monthly trends
+    // Calculate monthly volume
     const monthlyData = ascents.reduce((acc, ascent) => {
       const month = new Date(ascent.date_climbed).toISOString().slice(0, 7);
-      if (!acc[month]) acc[month] = [];
-      acc[month].push(ascent);
+      if (!acc[month]) acc[month] = { climbs: [], sessions: new Set() };
+      acc[month].climbs.push(ascent);
+      acc[month].sessions.add(ascent.date_climbed);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, { climbs: any[], sessions: Set<string> }>);
 
-    stats.monthlyTrends = Object.keys(monthlyData)
+    stats.monthlyVolume = Object.keys(monthlyData)
       .sort()
-      .slice(-12) // Last 12 months
+      .slice(-12)
       .map(month => ({
         month: new Date(month).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        climbs: monthlyData[month].length,
-        avgGrade: 0 // Simplified for now
+        climbs: monthlyData[month].climbs.length,
+        sessions: monthlyData[month].sessions.size
+      }));
+
+    // Calculate monthly trends (existing logic)
+    stats.monthlyTrends = Object.keys(monthlyData)
+      .sort()
+      .slice(-12)
+      .map(month => ({
+        month: new Date(month).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        climbs: monthlyData[month].climbs.length,
+        avgGrade: 0
       }));
 
     // Calculate grade pyramid
@@ -152,6 +204,47 @@ export function ProgressDashboard() {
         type: type || 'Unknown'
       };
     });
+
+    // Calculate attempts distribution
+    const attemptsCount = ascents.reduce((acc, ascent) => {
+      const attempts = ascent.attempts || 1;
+      const key = attempts === 1 ? '1' : attempts <= 3 ? '2-3' : attempts <= 5 ? '4-5' : '6+';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    stats.attemptsDistribution = Object.keys(attemptsCount).map(attempts => ({
+      attempts,
+      count: attemptsCount[attempts]
+    }));
+
+    // Calculate style distribution
+    const styleCount = ascents.reduce((acc, ascent) => {
+      const style = ascent.style || 'redpoint';
+      acc[style] = (acc[style] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const total = ascents.length;
+    stats.styleDistribution = Object.keys(styleCount).map(style => ({
+      style,
+      count: styleCount[style],
+      percentage: (styleCount[style] / total) * 100
+    }));
+
+    // Calculate favorite grades (most climbed)
+    const gradeOnlyCount = ascents.reduce((acc, ascent) => {
+      const grade = ascent.routes?.grade;
+      if (grade) {
+        acc[grade] = (acc[grade] || 0) + 1;
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    stats.favoriteGrades = Object.keys(gradeOnlyCount)
+      .map(grade => ({ grade, count: gradeOnlyCount[grade] }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
 
     return stats;
   };
@@ -180,17 +273,29 @@ export function ProgressDashboard() {
             Progress Dashboard
           </CardTitle>
           <CardDescription>
-            Track your climbing progress and achievements
+            Comprehensive analysis of your climbing journey
           </CardDescription>
         </CardHeader>
       </Card>
 
-      {/* Key Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Enhanced Key Stats Overview */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-600">{stats.totalClimbs}</div>
             <div className="text-xs text-gray-500">Total Climbs</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-purple-600">{stats.totalSessions}</div>
+            <div className="text-xs text-gray-500">Sessions</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 text-center">
+            <div className="text-2xl font-bold text-indigo-600">{stats.avgClimbsPerSession.toFixed(1)}</div>
+            <div className="text-xs text-gray-500">Avg per Session</div>
           </CardContent>
         </Card>
         <Card>
@@ -207,46 +312,77 @@ export function ProgressDashboard() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {stats.outdoorVsIndoor.outdoor + stats.outdoorVsIndoor.indoor > 0 
-                ? Math.round((stats.outdoorVsIndoor.outdoor / (stats.outdoorVsIndoor.outdoor + stats.outdoorVsIndoor.indoor)) * 100)
-                : 0}%
-            </div>
-            <div className="text-xs text-gray-500">Outdoor</div>
+            <div className="text-2xl font-bold text-red-600">{stats.onsightRate.toFixed(1)}%</div>
+            <div className="text-xs text-gray-500">Onsight Rate</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Hardest Grades */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Trophy className="h-5 w-5 mr-2" />
-            Personal Records
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {Object.keys(stats.hardestGrades).map(type => (
-              <Badge key={type} variant="secondary" className="capitalize">
-                {type}: {stats.hardestGrades[type]}
-              </Badge>
-            ))}
-            {Object.keys(stats.hardestGrades).length === 0 && (
-              <p className="text-gray-500 text-sm">No records yet - keep climbing!</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Personal Records & Favorite Grades */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Trophy className="h-5 w-5 mr-2" />
+              Personal Records
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(stats.hardestGrades).map(type => (
+                <Badge key={type} variant="secondary" className="capitalize">
+                  {type}: {stats.hardestGrades[type]}
+                </Badge>
+              ))}
+              {Object.keys(stats.hardestGrades).length === 0 && (
+                <p className="text-gray-500 text-sm">No records yet - keep climbing!</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
-      {/* Charts and Detailed Analysis */}
-      <Tabs defaultValue="trends" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Star className="h-5 w-5 mr-2" />
+              Favorite Grades
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {stats.favoriteGrades.map((item, index) => (
+                <div key={item.grade} className="flex justify-between items-center">
+                  <span className="font-medium">{item.grade}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">{item.count} climbs</span>
+                    <Badge variant={index === 0 ? "default" : "outline"}>
+                      #{index + 1}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+              {stats.favoriteGrades.length === 0 && (
+                <p className="text-gray-500 text-sm">No data yet</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Enhanced Charts and Analysis */}
+      <Tabs defaultValue="volume" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="volume">Volume</TabsTrigger>
           <TabsTrigger value="trends">Trends</TabsTrigger>
-          <TabsTrigger value="pyramid">Grade Pyramid</TabsTrigger>
-          <TabsTrigger value="distribution">Types</TabsTrigger>
-          <TabsTrigger value="success">Success Rate</TabsTrigger>
+          <TabsTrigger value="pyramid">Pyramid</TabsTrigger>
+          <TabsTrigger value="attempts">Attempts</TabsTrigger>
+          <TabsTrigger value="styles">Styles</TabsTrigger>
+          <TabsTrigger value="types">Types</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="volume" className="mt-6">
+          <MonthlyVolumeChart data={stats.monthlyVolume} />
+        </TabsContent>
 
         <TabsContent value="trends" className="mt-6">
           <ProgressOverTimeChart data={stats.monthlyTrends} />
@@ -256,17 +392,18 @@ export function ProgressDashboard() {
           <GradePyramidChart data={stats.gradePyramid} />
         </TabsContent>
 
-        <TabsContent value="distribution" className="mt-6">
+        <TabsContent value="attempts" className="mt-6">
+          <AttemptsAnalysisChart data={stats.attemptsDistribution} />
+        </TabsContent>
+
+        <TabsContent value="styles" className="mt-6">
+          <StyleAnalysisChart data={stats.styleDistribution} />
+        </TabsContent>
+
+        <TabsContent value="types" className="mt-6">
           <ClimbTypeDistribution 
             outdoor={stats.outdoorVsIndoor.outdoor} 
             indoor={stats.outdoorVsIndoor.indoor} 
-          />
-        </TabsContent>
-
-        <TabsContent value="success" className="mt-6">
-          <SendRateChart 
-            sendRate={stats.sendRate}
-            flashRate={stats.flashRate}
           />
         </TabsContent>
       </Tabs>
