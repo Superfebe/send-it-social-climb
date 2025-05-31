@@ -52,17 +52,17 @@ export function SessionCard({ session }: SessionCardProps) {
   }
 
   return (
-    <Card className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setShowDetails(true)}>
+    <Card className="hover:bg-gray-50 transition-colors cursor-pointer group" onClick={() => setShowDetails(true)}>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Mountain className="h-4 w-4 text-gray-500" />
-              <span className="font-semibold text-lg">
+              <Mountain className="h-4 w-4 text-gray-500 group-hover:text-gray-700" />
+              <span className="font-semibold text-lg group-hover:text-gray-900">
                 {session.areas?.name || 'Unknown Area'}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-gray-600 group-hover:text-gray-700">
               <Calendar className="h-3 w-3" />
               <span>{formatDate(session.start_time)}</span>
               <span>•</span>
@@ -79,7 +79,7 @@ export function SessionCard({ session }: SessionCardProps) {
           </Badge>
         </div>
 
-        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+        <div className="flex items-center gap-4 text-sm text-gray-600 group-hover:text-gray-700 mb-3">
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
             <span>{formatDuration(session.duration_minutes)}</span>
@@ -87,7 +87,7 @@ export function SessionCard({ session }: SessionCardProps) {
         </div>
 
         {session.notes && (
-          <p className="text-sm text-gray-600 italic mb-3">"{session.notes}"</p>
+          <p className="text-sm text-gray-600 group-hover:text-gray-700 italic mb-3">"{session.notes}"</p>
         )}
 
         <Button variant="outline" size="sm" className="w-full">
