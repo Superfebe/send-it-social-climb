@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -79,6 +80,9 @@ export default function Dashboard() {
       </Button>
       <Button variant="ghost" onClick={() => window.location.href = '/progress'}>
         Progress
+      </Button>
+      <Button variant="ghost" onClick={() => window.location.href = '/social'}>
+        Social
       </Button>
       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
         <span className="text-sm text-gray-700 truncate">Welcome, {user?.email}</span>

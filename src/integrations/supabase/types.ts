@@ -96,6 +96,33 @@ export type Database = {
           },
         ]
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string | null
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string | null
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string | null
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -176,6 +203,70 @@ export type Database = {
           },
         ]
       }
+      session_comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          session_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          session_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          session_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_comments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_likes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           area_id: string | null
@@ -184,6 +275,7 @@ export type Database = {
           duration_minutes: number | null
           end_time: string | null
           id: string
+          is_public: boolean | null
           notes: string | null
           start_time: string
           updated_at: string
@@ -196,6 +288,7 @@ export type Database = {
           duration_minutes?: number | null
           end_time?: string | null
           id?: string
+          is_public?: boolean | null
           notes?: string | null
           start_time?: string
           updated_at?: string
@@ -208,6 +301,7 @@ export type Database = {
           duration_minutes?: number | null
           end_time?: string | null
           id?: string
+          is_public?: boolean | null
           notes?: string | null
           start_time?: string
           updated_at?: string
