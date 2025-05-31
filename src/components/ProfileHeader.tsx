@@ -6,7 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Camera, Check, X, Edit } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Camera, Check, X, Edit, Lock, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type Profile = {
@@ -14,6 +15,7 @@ type Profile = {
   full_name: string | null;
   bio: string | null;
   avatar_url: string | null;
+  is_public: boolean;
 };
 
 export function ProfileHeader() {
@@ -37,7 +39,7 @@ export function ProfileHeader() {
       
       const { data, error } = await supabase
         .from('profiles')
-        .select('username, full_name, bio, avatar_url')
+        .select('username, full_name, bio, avatar_url, is_public')
         .eq('id', user?.id)
         .single();
         
@@ -176,9 +178,24 @@ export function ProfileHeader() {
         </div>
         
         <div className="ml-0 sm:ml-6 mt-4 sm:mt-0 text-center sm:text-left">
-          <h2 className="text-2xl font-bold">
-            {profile?.full_name || profile?.username || 'Climber'}
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+            <h2 className="text-2xl font-bold">
+              {profile?.full_name || profile?.username || 'Climber'}
+            </h2>
+            <Badge variant={profile?.is_public ? "default" : "secondary"} className="w-fit">
+              {profile?.is_public ? (
+                <>
+                  <Globe className="h-3 w-3 mr-1" />
+                  Public
+                </>
+              ) : (
+                <>
+                  <Lock className="h-3 w-3 mr-1" />
+                  Private
+                </>
+              )}
+            </Badge>
+          </div>
           <div className="text-sm text-gray-500">@{profile?.username || 'anonymous'}</div>
           
           <div className="mt-2">

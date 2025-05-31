@@ -5,16 +5,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock, Globe } from 'lucide-react';
 
 type Profile = {
   username: string | null;
   full_name: string | null;
   bio: string | null;
   avatar_url: string | null;
+  is_public: boolean;
 };
 
 export function ProfileSettings() {
@@ -26,7 +28,8 @@ export function ProfileSettings() {
   const [formData, setFormData] = useState({
     username: '',
     full_name: '',
-    bio: ''
+    bio: '',
+    is_public: true
   });
 
   useEffect(() => {
@@ -40,7 +43,7 @@ export function ProfileSettings() {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('username, full_name, bio, avatar_url')
+        .select('username, full_name, bio, avatar_url, is_public')
         .eq('id', user?.id)
         .single();
 
@@ -50,7 +53,8 @@ export function ProfileSettings() {
       setFormData({
         username: data.username || '',
         full_name: data.full_name || '',
-        bio: data.bio || ''
+        bio: data.bio || '',
+        is_public: data.is_public
       });
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -64,6 +68,13 @@ export function ProfileSettings() {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handlePrivacyToggle = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      is_public: checked
     }));
   };
 
@@ -92,7 +103,8 @@ export function ProfileSettings() {
         .update({
           username: formData.username,
           full_name: formData.full_name,
-          bio: formData.bio
+          bio: formData.bio,
+          is_public: formData.is_public
         })
         .eq('id', user?.id);
 
@@ -102,7 +114,8 @@ export function ProfileSettings() {
         ...prev!,
         username: formData.username,
         full_name: formData.full_name,
-        bio: formData.bio
+        bio: formData.bio,
+        is_public: formData.is_public
       }));
 
       toast({
@@ -139,7 +152,7 @@ export function ProfileSettings() {
           <div className="h-4 w-72 bg-gray-300 rounded"></div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <div key={i} className="space-y-2">
               <div className="h-4 w-24 bg-gray-300 rounded"></div>
               <div className="h-10 w-full bg-gray-300 rounded"></div>
@@ -156,7 +169,7 @@ export function ProfileSettings() {
         <CardHeader>
           <CardTitle>Profile Settings</CardTitle>
           <CardDescription>
-            Update your profile information
+            Update your profile information and privacy settings
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -202,6 +215,34 @@ export function ProfileSettings() {
             <p className="text-xs text-gray-500">
               Maximum 160 characters
             </p>
+          </div>
+
+          <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <div className="flex items-center space-x-2">
+                  {formData.is_public ? (
+                    <Globe className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <Lock className="h-4 w-4 text-orange-600" />
+                  )}
+                  <Label htmlFor="privacy-toggle" className="font-medium">
+                    {formData.is_public ? 'Public Profile' : 'Private Profile'}
+                  </Label>
+                </div>
+                <p className="text-sm text-gray-500">
+                  {formData.is_public 
+                    ? 'Anyone can view your profile and climbing activity'
+                    : 'Only your friends can view your profile and activity'
+                  }
+                </p>
+              </div>
+              <Switch
+                id="privacy-toggle"
+                checked={formData.is_public}
+                onCheckedChange={handlePrivacyToggle}
+              />
+            </div>
           </div>
         </CardContent>
         <CardFooter>
