@@ -118,19 +118,19 @@ export function TrainingPlanGenerator() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500">Primary Discipline:</span>
+                  <span className="text-gray-400">Primary Discipline:</span>
                   <Badge variant="outline" className="ml-2 capitalize">{userStats.primaryDiscipline}</Badge>
                 </div>
                 <div>
-                  <span className="text-gray-500">Recent Grade:</span>
+                  <span className="text-gray-400">Recent Grade:</span>
                   <Badge variant="outline" className="ml-2">{userStats.recentGrade}</Badge>
                 </div>
                 <div>
-                  <span className="text-gray-500">Weekly Volume:</span>
+                  <span className="text-gray-400">Weekly Volume:</span>
                   <Badge variant="outline" className="ml-2">{userStats.weeklyVolume} sessions</Badge>
                 </div>
                 <div>
-                  <span className="text-gray-500">Focus Areas:</span>
+                  <span className="text-gray-400">Focus Areas:</span>
                   <Badge variant="outline" className="ml-2">{userStats.weaknesses[0]}</Badge>
                 </div>
               </div>
@@ -142,13 +142,13 @@ export function TrainingPlanGenerator() {
         ) : (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">{currentPlan.title}</h3>
+              <h3 className="font-semibold text-white">{currentPlan.title}</h3>
               <Badge>{currentPlan.duration}</Badge>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <h4 className="font-medium mb-2 flex items-center">
+                <h4 className="font-medium mb-2 flex items-center text-white">
                   <TrendingUp className="h-4 w-4 mr-1" />
                   Focus Areas
                 </h4>
@@ -162,22 +162,22 @@ export function TrainingPlanGenerator() {
               </div>
               
               <div>
-                <h4 className="font-medium mb-2 flex items-center">
+                <h4 className="font-medium mb-2 flex items-center text-white">
                   <Target className="h-4 w-4 mr-1" />
                   Goal
                 </h4>
-                <p className="text-sm text-gray-600">{currentPlan.goal}</p>
+                <p className="text-sm text-gray-300">{currentPlan.goal}</p>
               </div>
             </div>
 
             <div>
-              <h4 className="font-medium mb-3 flex items-center">
+              <h4 className="font-medium mb-3 flex items-center text-white">
                 <Calendar className="h-4 w-4 mr-1" />
                 Weekly Schedule
               </h4>
               <div className="space-y-2">
                 {currentPlan.schedule.map((day, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <div key={index} className="flex items-center justify-between p-2 bg-gray-800 rounded text-white">
                     <span className="font-medium">{day.day}</span>
                     <span className="text-sm">{day.activity}</span>
                     <Badge variant={day.intensity === 'High' ? 'destructive' : day.intensity === 'Medium' ? 'default' : 'secondary'}>
