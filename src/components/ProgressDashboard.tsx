@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, Target, Calendar, Trophy, Star, Mountain, Timer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Target, Calendar, Trophy, Star, Mountain, Timer, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { GradePyramidChart } from './charts/GradePyramidChart';
@@ -86,7 +88,7 @@ export function ProgressDashboard() {
         if (error) throw error;
 
         if (ascents) {
-          console.log('Fetched ascents:', ascents);
+          console.log('Fetched ascents with full data:', ascents);
           const processedStats = processProgressData(ascents);
           setStats(processedStats);
         }
@@ -102,6 +104,7 @@ export function ProgressDashboard() {
 
   const processProgressData = (ascents: any[]): ProgressStats => {
     console.log('Processing progress data for', ascents.length, 'ascents');
+    console.log('Sample ascent data:', ascents[0]);
     
     const stats: ProgressStats = {
       totalClimbs: ascents.length,
@@ -164,9 +167,9 @@ export function ProgressDashboard() {
       }
     });
 
-    // Create daily volume data for charts
+    // Create daily volume data for volume charts
     const dailyData = ascents.reduce((acc, ascent) => {
-      const date = ascent.date_climbed; // This should be in YYYY-MM-DD format
+      const date = ascent.date_climbed;
       if (!acc[date]) {
         acc[date] = { climbs: 0, sessions: new Set() };
       }
@@ -175,18 +178,15 @@ export function ProgressDashboard() {
       return acc;
     }, {} as Record<string, { climbs: number, sessions: Set<string> }>);
 
-    console.log('Daily data:', dailyData);
+    console.log('Daily data for volume charts:', dailyData);
 
-    // Convert to the format expected by charts
     stats.monthlyVolume = Object.keys(dailyData).map(date => ({
-      month: date, // Use the full date as the key
+      month: date,
       climbs: dailyData[date].climbs,
       sessions: dailyData[date].sessions.size
     }));
 
-    console.log('Monthly volume data:', stats.monthlyVolume);
-
-    // Calculate monthly trends (existing logic)
+    // Calculate monthly trends (for trends chart)
     const monthlyData = ascents.reduce((acc, ascent) => {
       const month = new Date(ascent.date_climbed).toISOString().slice(0, 7);
       if (!acc[month]) acc[month] = { climbs: [], sessions: new Set() };
@@ -214,7 +214,6 @@ export function ProgressDashboard() {
       const type = ascent.routes?.climb_type || 'unknown';
       
       if (grade) {
-        // Simple numeric conversion for grade comparison (this is simplified)
         const numericGrade = parseFloat(grade.replace(/[^0-9.]/g, '')) || 0;
         
         if (!gradeProgressionData[date]) {
@@ -235,21 +234,20 @@ export function ProgressDashboard() {
         type: gradeProgressionData[date].type
       }));
 
-    // Calculate grade pyramid
-    const gradeCount = ascents.reduce((acc, ascent) => {
-      const key = `${ascent.routes?.grade}-${ascent.routes?.climb_type}`;
-      acc[key] = (acc[key] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    stats.gradePyramid = Object.keys(gradeCount).map(key => {
-      const [grade, type] = key.split('-');
+    // Calculate grade pyramid - Fixed logic
+    console.log('Creating grade pyramid data...');
+    stats.gradePyramid = ascents.map(ascent => {
+      const grade = ascent.routes?.grade || 'Unknown';
+      const type = ascent.routes?.climb_type || 'Unknown';
+      console.log('Processing ascent for pyramid:', { grade, type, ascentId: ascent.id });
       return {
-        grade: grade || 'Unknown',
-        count: gradeCount[key],
-        type: type || 'Unknown'
+        grade,
+        count: 1, // Each ascent counts as 1
+        type
       };
     });
+
+    console.log('Grade pyramid raw data:', stats.gradePyramid);
 
     // Calculate attempts distribution
     const attemptsCount = ascents.reduce((acc, ascent) => {
@@ -315,9 +313,19 @@ export function ProgressDashboard() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <TrendingUp className="h-5 w-5 mr-2" />
-            Progress Dashboard
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <TrendingUp className="h-5 w-5 mr-2" />
+              Progress Dashboard
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/dashboard'}
+              className="flex items-center"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Dashboard
+            </Button>
           </CardTitle>
           <CardDescription>
             Comprehensive analysis of your climbing journey
