@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -247,6 +246,28 @@ export function DetailedTrainingPlan() {
 
   const savePlan = async (plan: TrainingPlan) => {
     try {
+      // Convert the plan data to a format compatible with Supabase Json type
+      const planDataForDb = {
+        sessions: plan.sessions.map(session => ({
+          week: session.week,
+          day: session.day,
+          type: session.type,
+          title: session.title,
+          description: session.description,
+          duration: session.duration,
+          intensity: session.intensity,
+          exercises: session.exercises.map(exercise => ({
+            name: exercise.name,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            duration: exercise.duration,
+            rest: exercise.rest,
+            notes: exercise.notes
+          }))
+        })),
+        gradeSystem: plan.gradeSystem
+      };
+
       const { data, error } = await supabase
         .from('training_plans')
         .insert({
@@ -257,10 +278,7 @@ export function DetailedTrainingPlan() {
           target_grade: plan.targetGrade,
           duration_weeks: plan.durationWeeks,
           status: plan.status,
-          plan_data: { 
-            sessions: plan.sessions,
-            gradeSystem: plan.gradeSystem
-          }
+          plan_data: planDataForDb
         })
         .select()
         .single();
@@ -277,7 +295,14 @@ export function DetailedTrainingPlan() {
         description: session.description,
         estimated_duration_minutes: session.duration,
         intensity_level: session.intensity,
-        exercises: session.exercises as any
+        exercises: session.exercises.map(exercise => ({
+          name: exercise.name,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          duration: exercise.duration,
+          rest: exercise.rest,
+          notes: exercise.notes
+        }))
       }));
 
       const { error: sessionError } = await supabase
