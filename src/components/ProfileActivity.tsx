@@ -237,21 +237,21 @@ export function ProfileActivity() {
                   <h4 className="font-medium mb-2">Ascents ({session.ascents.length})</h4>
                   <div className="space-y-2">
                     {session.ascents.slice(0, 3).map((ascent) => (
-                      <div key={ascent.id} className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
-                        <span className="font-medium">
+                      <div key={ascent.id} className="flex items-center justify-between text-sm bg-gray-700 p-2 rounded border border-gray-600">
+                        <span className="font-medium text-gray-100">
                           {ascent.route_name || 'Unnamed Route'}
                         </span>
                         <div className="flex items-center space-x-2">
-                          <span className="text-blue-600 font-medium">
+                          <span className="text-blue-400 font-medium">
                             {ascent.route_grade}
                           </span>
                           {ascent.style && (
-                            <span className="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">
+                            <span className="text-green-400 text-xs bg-green-900 px-2 py-1 rounded">
                               {ascent.style}
                             </span>
                           )}
                           {ascent.attempts && ascent.attempts > 1 && (
-                            <span className="text-gray-500 text-xs">
+                            <span className="text-gray-300 text-xs">
                               {ascent.attempts} attempts
                             </span>
                           )}

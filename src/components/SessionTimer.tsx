@@ -29,8 +29,8 @@ export function SessionTimer({ startTime }: SessionTimerProps) {
   }, [startTime]);
 
   return (
-    <div className="flex items-center space-x-2 text-lg font-mono bg-gray-50 p-3 rounded-lg">
-      <Clock className="h-5 w-5" />
+    <div className="flex items-center space-x-2 text-lg font-mono bg-gray-800 text-gray-100 p-3 rounded-lg border border-gray-600">
+      <Clock className="h-5 w-5 text-gray-300" />
       <span>{duration}</span>
     </div>
   );
