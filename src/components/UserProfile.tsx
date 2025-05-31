@@ -30,12 +30,17 @@ export function UserProfile() {
   const [friendshipStatus, setFriendshipStatus] = useState<FriendshipStatus>('none');
   const [canViewProfile, setCanViewProfile] = useState(false);
 
+  // Check if viewing own profile
+  const isOwnProfile = user?.id === userId;
+
   useEffect(() => {
     if (userId && user) {
       fetchUserProfile();
-      checkFriendshipStatus();
+      if (!isOwnProfile) {
+        checkFriendshipStatus();
+      }
     }
-  }, [userId, user]);
+  }, [userId, user, isOwnProfile]);
 
   const fetchUserProfile = async () => {
     if (!userId) return;
@@ -90,10 +95,10 @@ export function UserProfile() {
 
   useEffect(() => {
     if (profile) {
-      // User can view profile if it's public or they are friends
-      setCanViewProfile(profile.is_public || friendshipStatus === 'friends');
+      // User can view profile if it's their own, public, or they are friends
+      setCanViewProfile(isOwnProfile || profile.is_public || friendshipStatus === 'friends');
     }
-  }, [profile, friendshipStatus]);
+  }, [profile, friendshipStatus, isOwnProfile]);
 
   const sendFriendRequest = async () => {
     if (!userId || !user) return;
@@ -237,25 +242,27 @@ export function UserProfile() {
               </div>
             )}
 
-            <div className="flex items-center space-x-2">
-              {friendshipStatus === 'none' && (
-                <Button onClick={sendFriendRequest}>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Add Friend
-                </Button>
-              )}
-              {friendshipStatus === 'pending_sent' && (
-                <Button disabled variant="outline">
-                  Friend Request Sent
-                </Button>
-              )}
-              {friendshipStatus === 'friends' && (
-                <Button variant="outline" onClick={removeFriend}>
-                  <UserMinus className="h-4 w-4 mr-2" />
-                  Remove Friend
-                </Button>
-              )}
-            </div>
+            {!isOwnProfile && (
+              <div className="flex items-center space-x-2">
+                {friendshipStatus === 'none' && (
+                  <Button onClick={sendFriendRequest}>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Friend
+                  </Button>
+                )}
+                {friendshipStatus === 'pending_sent' && (
+                  <Button disabled variant="outline">
+                    Friend Request Sent
+                  </Button>
+                )}
+                {friendshipStatus === 'friends' && (
+                  <Button variant="outline" onClick={removeFriend}>
+                    <UserMinus className="h-4 w-4 mr-2" />
+                    Remove Friend
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </Card>

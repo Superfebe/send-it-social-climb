@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus, Eye } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -87,6 +87,10 @@ export function FindFriends() {
     }
   };
 
+  const viewProfile = (userId: string) => {
+    window.location.href = `/profile/${userId}`;
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       searchUsers();
@@ -138,7 +142,15 @@ export function FindFriends() {
                       )}
                     </div>
                   </div>
-                  <div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => viewProfile(result.id)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
                     {result.friendship_status === 'none' && (
                       <Button
                         size="sm"

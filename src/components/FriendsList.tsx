@@ -88,6 +88,14 @@ export function FriendsList() {
     window.location.href = `/profile/${friendId}`;
   };
 
+  const goToDiscover = () => {
+    // Use the tab system to switch to discover
+    const discoverTab = document.querySelector('[value="discover"]') as HTMLElement;
+    if (discoverTab) {
+      discoverTab.click();
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -120,7 +128,7 @@ export function FriendsList() {
             <p className="text-gray-500 mb-4">
               Start building your climbing community by finding and adding friends!
             </p>
-            <Button onClick={() => window.location.href = '#discover'}>
+            <Button onClick={goToDiscover}>
               Find Friends
             </Button>
           </div>
