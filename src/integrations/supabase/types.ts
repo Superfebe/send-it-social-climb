@@ -9,7 +9,192 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      areas: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          latitude: number | null
+          location: string | null
+          longitude: number | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          latitude?: number | null
+          location?: string | null
+          longitude?: number | null
+          name?: string
+        }
+        Relationships: []
+      }
+      ascents: {
+        Row: {
+          attempts: number | null
+          created_at: string
+          date_climbed: string
+          id: string
+          notes: string | null
+          rating: number | null
+          route_id: string | null
+          style: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string
+          date_climbed?: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          route_id?: string | null
+          style?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string
+          date_climbed?: string
+          id?: string
+          notes?: string | null
+          rating?: number | null
+          route_id?: string | null
+          style?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ascents_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      routes: {
+        Row: {
+          area_id: string | null
+          climb_type: Database["public"]["Enums"]["climb_type"]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          difficulty_system: Database["public"]["Enums"]["difficulty_system"]
+          grade: string
+          id: string
+          length_meters: number | null
+          name: string
+          pitches: number | null
+        }
+        Insert: {
+          area_id?: string | null
+          climb_type: Database["public"]["Enums"]["climb_type"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty_system?: Database["public"]["Enums"]["difficulty_system"]
+          grade: string
+          id?: string
+          length_meters?: number | null
+          name: string
+          pitches?: number | null
+        }
+        Update: {
+          area_id?: string | null
+          climb_type?: Database["public"]["Enums"]["climb_type"]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          difficulty_system?: Database["public"]["Enums"]["difficulty_system"]
+          grade?: string
+          id?: string
+          length_meters?: number | null
+          name?: string
+          pitches?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routes_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          route_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          route_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +203,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      climb_type: "sport" | "trad" | "boulder" | "aid" | "mixed" | "ice"
+      difficulty_system: "yds" | "french" | "v_scale" | "uiaa"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +319,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      climb_type: ["sport", "trad", "boulder", "aid", "mixed", "ice"],
+      difficulty_system: ["yds", "french", "v_scale", "uiaa"],
+    },
   },
 } as const
