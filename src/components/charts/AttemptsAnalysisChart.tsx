@@ -21,6 +21,8 @@ const chartConfig = {
 };
 
 export function AttemptsAnalysisChart({ data }: AttemptsAnalysisChartProps) {
+  console.log('AttemptsAnalysisChart received data:', data);
+
   if (data.length === 0) {
     return (
       <Card>

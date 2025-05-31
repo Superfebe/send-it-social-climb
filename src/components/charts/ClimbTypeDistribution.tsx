@@ -21,6 +21,8 @@ const chartConfig = {
 };
 
 export function ClimbTypeDistribution({ outdoor, indoor }: ClimbTypeDistributionProps) {
+  console.log('ClimbTypeDistribution received data:', { outdoor, indoor });
+
   const data = [
     { name: 'Outdoor', value: outdoor, color: 'var(--color-outdoor)' },
     { name: 'Indoor', value: indoor, color: 'var(--color-indoor)' },

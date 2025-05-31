@@ -22,6 +22,8 @@ const chartConfig = {
 };
 
 export function GradePyramidChart({ data }: GradePyramidChartProps) {
+  console.log('GradePyramidChart received data:', data);
+
   // Group by grade and sum counts
   const groupedData = data.reduce((acc, item) => {
     const existing = acc.find(d => d.grade === item.grade);

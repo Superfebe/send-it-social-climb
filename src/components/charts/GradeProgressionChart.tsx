@@ -27,6 +27,8 @@ const chartConfig = {
 };
 
 export function GradeProgressionChart({ data }: GradeProgressionChartProps) {
+  console.log('GradeProgressionChart received data:', data);
+
   if (data.length === 0) {
     return (
       <Card>

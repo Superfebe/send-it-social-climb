@@ -204,6 +204,37 @@ export function ProgressDashboard() {
         avgGrade: 0
       }));
 
+    // Calculate grade progression over time
+    const sortedAscents = [...ascents].sort((a, b) => new Date(a.date_climbed).getTime() - new Date(b.date_climbed).getTime());
+    const gradeProgressionData: { [key: string]: { hardestGrade: number; grades: number[]; type: string } } = {};
+    
+    sortedAscents.forEach(ascent => {
+      const date = ascent.date_climbed;
+      const grade = ascent.routes?.grade;
+      const type = ascent.routes?.climb_type || 'unknown';
+      
+      if (grade) {
+        // Simple numeric conversion for grade comparison (this is simplified)
+        const numericGrade = parseFloat(grade.replace(/[^0-9.]/g, '')) || 0;
+        
+        if (!gradeProgressionData[date]) {
+          gradeProgressionData[date] = { hardestGrade: numericGrade, grades: [numericGrade], type };
+        } else {
+          gradeProgressionData[date].grades.push(numericGrade);
+          gradeProgressionData[date].hardestGrade = Math.max(gradeProgressionData[date].hardestGrade, numericGrade);
+        }
+      }
+    });
+
+    stats.gradeProgression = Object.keys(gradeProgressionData)
+      .sort()
+      .map(date => ({
+        date,
+        hardestGrade: gradeProgressionData[date].hardestGrade,
+        avgGrade: gradeProgressionData[date].grades.reduce((a, b) => a + b, 0) / gradeProgressionData[date].grades.length,
+        type: gradeProgressionData[date].type
+      }));
+
     // Calculate grade pyramid
     const gradeCount = ascents.reduce((acc, ascent) => {
       const key = `${ascent.routes?.grade}-${ascent.routes?.climb_type}`;
@@ -261,6 +292,7 @@ export function ProgressDashboard() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
 
+    console.log('Final processed stats:', stats);
     return stats;
   };
 

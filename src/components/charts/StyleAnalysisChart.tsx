@@ -22,6 +22,8 @@ const chartConfig = {
 };
 
 export function StyleAnalysisChart({ data }: StyleAnalysisChartProps) {
+  console.log('StyleAnalysisChart received data:', data);
+
   if (data.length === 0) {
     return (
       <Card>
