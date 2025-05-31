@@ -86,6 +86,7 @@ export function ProgressDashboard() {
         if (error) throw error;
 
         if (ascents) {
+          console.log('Fetched ascents:', ascents);
           const processedStats = processProgressData(ascents);
           setStats(processedStats);
         }
@@ -100,6 +101,8 @@ export function ProgressDashboard() {
   }, [user]);
 
   const processProgressData = (ascents: any[]): ProgressStats => {
+    console.log('Processing progress data for', ascents.length, 'ascents');
+    
     const stats: ProgressStats = {
       totalClimbs: ascents.length,
       totalSessions: 0,
@@ -161,7 +164,29 @@ export function ProgressDashboard() {
       }
     });
 
-    // Calculate monthly volume
+    // Create daily volume data for charts
+    const dailyData = ascents.reduce((acc, ascent) => {
+      const date = ascent.date_climbed; // This should be in YYYY-MM-DD format
+      if (!acc[date]) {
+        acc[date] = { climbs: 0, sessions: new Set() };
+      }
+      acc[date].climbs++;
+      acc[date].sessions.add(ascent.date_climbed);
+      return acc;
+    }, {} as Record<string, { climbs: number, sessions: Set<string> }>);
+
+    console.log('Daily data:', dailyData);
+
+    // Convert to the format expected by charts
+    stats.monthlyVolume = Object.keys(dailyData).map(date => ({
+      month: date, // Use the full date as the key
+      climbs: dailyData[date].climbs,
+      sessions: dailyData[date].sessions.size
+    }));
+
+    console.log('Monthly volume data:', stats.monthlyVolume);
+
+    // Calculate monthly trends (existing logic)
     const monthlyData = ascents.reduce((acc, ascent) => {
       const month = new Date(ascent.date_climbed).toISOString().slice(0, 7);
       if (!acc[month]) acc[month] = { climbs: [], sessions: new Set() };
@@ -170,16 +195,6 @@ export function ProgressDashboard() {
       return acc;
     }, {} as Record<string, { climbs: any[], sessions: Set<string> }>);
 
-    stats.monthlyVolume = Object.keys(monthlyData)
-      .sort()
-      .slice(-12)
-      .map(month => ({
-        month: new Date(month).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        climbs: monthlyData[month].climbs.length,
-        sessions: monthlyData[month].sessions.size
-      }));
-
-    // Calculate monthly trends (existing logic)
     stats.monthlyTrends = Object.keys(monthlyData)
       .sort()
       .slice(-12)
