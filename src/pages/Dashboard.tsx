@@ -1,9 +1,8 @@
-
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mountain, TrendingUp, Star, Target } from 'lucide-react';
+import { Mountain, TrendingUp, Target, MapPin } from 'lucide-react';
 import { RecentAscents } from '@/components/RecentAscents';
 import { ClimbingStats } from '@/components/ClimbingStats';
 import { LogClimbForm } from '@/components/LogClimbForm';
@@ -80,6 +79,12 @@ export default function Dashboard() {
               <span className="ml-2 text-xl font-bold text-gray-900">ClimbTracker</span>
             </div>
             <div className="flex items-center space-x-4">
+              <Button variant="ghost" onClick={() => window.location.href = '/routes'}>
+                Routes
+              </Button>
+              <Button variant="ghost" onClick={() => window.location.href = '/progress'}>
+                Progress
+              </Button>
               <span className="text-sm text-gray-700">Welcome, {user?.email}</span>
               <Button variant="outline" onClick={signOut}>
                 Sign Out
@@ -108,13 +113,9 @@ export default function Dashboard() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <LogClimbForm onSuccess={handleClimbLogged} />
-                    <Button className="w-full" variant="outline">
-                      <Star className="h-4 w-4 mr-2" />
-                      View Wishlist
-                    </Button>
-                    <Button className="w-full" variant="outline">
-                      <Mountain className="h-4 w-4 mr-2" />
-                      Browse Routes
+                    <Button className="w-full" variant="outline" onClick={() => window.location.href = '/routes'}>
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Explore Routes
                     </Button>
                   </CardContent>
                 </Card>
@@ -126,32 +127,14 @@ export default function Dashboard() {
             {/* Main Content */}
             <div className="lg:col-span-2">
               <Tabs defaultValue="recent" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="recent">Recent Climbs</TabsTrigger>
-                  <TabsTrigger value="routes">Routes</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="recent">Recent Activity</TabsTrigger>
                   <TabsTrigger value="progress">Progress</TabsTrigger>
                   <TabsTrigger value="goals">Goals</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="recent" className="mt-6">
                   <RecentAscents key={refreshTrigger} />
-                </TabsContent>
-
-                <TabsContent value="routes" className="mt-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Browse Routes</CardTitle>
-                      <CardDescription>
-                        Discover new climbing routes in your area
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-center py-8">
-                        <Mountain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">Route browsing feature coming soon!</p>
-                      </div>
-                    </CardContent>
-                  </Card>
                 </TabsContent>
 
                 <TabsContent value="progress" className="mt-6">

@@ -5,6 +5,7 @@ import Index from './pages/Index';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
 import Progress from './pages/Progress';
+import Routes from './pages/Routes';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -71,6 +72,11 @@ function App() {
           <Route path="/progress" element={
             <ProtectedRoute>
               <Progress />
+            </ProtectedRoute>
+          } />
+          <Route path="/routes" element={
+            <ProtectedRoute>
+              <Routes />
             </ProtectedRoute>
           } />
         </Routes>
