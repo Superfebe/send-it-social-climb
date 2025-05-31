@@ -3,12 +3,20 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mountain, Plus, TrendingUp, Star, Calendar } from 'lucide-react';
+import { Mountain, TrendingUp, Star, Calendar } from 'lucide-react';
 import { RecentAscents } from '@/components/RecentAscents';
 import { ClimbingStats } from '@/components/ClimbingStats';
+import { LogClimbForm } from '@/components/LogClimbForm';
+import { useState } from 'react';
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleClimbLogged = () => {
+    // Trigger refresh of stats and recent climbs
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -37,27 +45,24 @@ export default function Dashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <Plus className="h-5 w-5 mr-2" />
+                    <Mountain className="h-5 w-5 mr-2" />
                     Quick Actions
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full" variant="default">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Log New Climb
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <Mountain className="h-4 w-4 mr-2" />
-                    Add New Route
-                  </Button>
+                  <LogClimbForm onSuccess={handleClimbLogged} />
                   <Button className="w-full" variant="outline">
                     <Star className="h-4 w-4 mr-2" />
                     View Wishlist
                   </Button>
+                  <Button className="w-full" variant="outline">
+                    <Mountain className="h-4 w-4 mr-2" />
+                    Browse Routes
+                  </Button>
                 </CardContent>
               </Card>
 
-              <ClimbingStats />
+              <ClimbingStats key={refreshTrigger} />
             </div>
 
             {/* Main Content */}
@@ -70,7 +75,7 @@ export default function Dashboard() {
                 </TabsList>
 
                 <TabsContent value="recent" className="mt-6">
-                  <RecentAscents />
+                  <RecentAscents key={refreshTrigger} />
                 </TabsContent>
 
                 <TabsContent value="routes" className="mt-6">
