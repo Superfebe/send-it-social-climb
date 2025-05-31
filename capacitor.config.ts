@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.48a5a3461aa441d0a799bd8df13cb5cb',
+  appId: 'com.senditsocialclimb.app',
   appName: 'send-it-social-climb',
   webDir: 'dist',
   server: {
