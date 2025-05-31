@@ -51,6 +51,7 @@ export type Database = {
           notes: string | null
           rating: number | null
           route_id: string | null
+          session_id: string | null
           style: string | null
           user_id: string | null
         }
@@ -62,6 +63,7 @@ export type Database = {
           notes?: string | null
           rating?: number | null
           route_id?: string | null
+          session_id?: string | null
           style?: string | null
           user_id?: string | null
         }
@@ -73,6 +75,7 @@ export type Database = {
           notes?: string | null
           rating?: number | null
           route_id?: string | null
+          session_id?: string | null
           style?: string | null
           user_id?: string | null
         }
@@ -82,6 +85,13 @@ export type Database = {
             columns: ["route_id"]
             isOneToOne: false
             referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ascents_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -159,6 +169,53 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "routes_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          area_id: string | null
+          climb_type: Database["public"]["Enums"]["climb_type"]
+          created_at: string
+          duration_minutes: number | null
+          end_time: string | null
+          id: string
+          notes: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area_id?: string | null
+          climb_type: Database["public"]["Enums"]["climb_type"]
+          created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area_id?: string | null
+          climb_type?: Database["public"]["Enums"]["climb_type"]
+          created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_area_id_fkey"
             columns: ["area_id"]
             isOneToOne: false
             referencedRelation: "areas"

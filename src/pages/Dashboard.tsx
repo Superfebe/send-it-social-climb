@@ -3,20 +3,72 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mountain, TrendingUp, Star, Calendar, Target } from 'lucide-react';
+import { Mountain, TrendingUp, Star, Target } from 'lucide-react';
 import { RecentAscents } from '@/components/RecentAscents';
 import { ClimbingStats } from '@/components/ClimbingStats';
 import { LogClimbForm } from '@/components/LogClimbForm';
-import { useState } from 'react';
+import { SessionManager } from '@/components/SessionManager';
+import { QuickLogForm } from '@/components/QuickLogForm';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Session {
+  id: string;
+  area_id: string | null;
+  climb_type: string;
+  start_time: string;
+  end_time: string | null;
+  duration_minutes: number | null;
+  notes: string | null;
+  areas?: {
+    name: string;
+  };
+}
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [activeSession, setActiveSession] = useState<Session | null>(null);
 
   const handleClimbLogged = () => {
-    // Trigger refresh of stats and recent climbs
     setRefreshTrigger(prev => prev + 1);
   };
+
+  const handleSessionChange = () => {
+    setRefreshTrigger(prev => prev + 1);
+    checkActiveSession();
+  };
+
+  const checkActiveSession = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          areas (
+            name
+          )
+        `)
+        .eq('user_id', user.id)
+        .is('end_time', null)
+        .order('start_time', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      setActiveSession(data);
+    } catch (error) {
+      console.error('Error checking active session:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      checkActiveSession();
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,26 +93,32 @@ export default function Dashboard() {
         <div className="px-4 py-6 sm:px-0">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Quick Actions */}
-            <div className="lg:col-span-1">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Mountain className="h-5 w-5 mr-2" />
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <LogClimbForm onSuccess={handleClimbLogged} />
-                  <Button className="w-full" variant="outline">
-                    <Star className="h-4 w-4 mr-2" />
-                    View Wishlist
-                  </Button>
-                  <Button className="w-full" variant="outline">
-                    <Mountain className="h-4 w-4 mr-2" />
-                    Browse Routes
-                  </Button>
-                </CardContent>
-              </Card>
+            <div className="lg:col-span-1 space-y-6">
+              <SessionManager onSessionChange={handleSessionChange} />
+              
+              {activeSession ? (
+                <QuickLogForm session={activeSession} onSuccess={handleClimbLogged} />
+              ) : (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Mountain className="h-5 w-5 mr-2" />
+                      Quick Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <LogClimbForm onSuccess={handleClimbLogged} />
+                    <Button className="w-full" variant="outline">
+                      <Star className="h-4 w-4 mr-2" />
+                      View Wishlist
+                    </Button>
+                    <Button className="w-full" variant="outline">
+                      <Mountain className="h-4 w-4 mr-2" />
+                      Browse Routes
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
               <ClimbingStats key={refreshTrigger} />
             </div>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,6 +31,7 @@ type FormData = z.infer<typeof formSchema>;
 
 interface LogClimbFormProps {
   onSuccess?: () => void;
+  sessionId?: string; // Optional session to link climbs to
 }
 
 const gradeOptions = {
@@ -41,7 +41,7 @@ const gradeOptions = {
   uiaa: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VII+', 'VIII-', 'VIII', 'VIII+', 'IX-', 'IX', 'IX+', 'X-', 'X', 'X+', 'XI-', 'XI', 'XI+', 'XII-', 'XII']
 };
 
-export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
+export function LogClimbForm({ onSuccess, sessionId }: LogClimbFormProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -177,6 +177,7 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
         .insert({
           user_id: user.id,
           route_id: routeId,
+          session_id: sessionId || null, // Link to session if provided
           date_climbed: data.dateClimbed,
           style: data.style || null,
           attempts: data.attempts,
