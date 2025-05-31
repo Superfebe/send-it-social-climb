@@ -80,6 +80,8 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
     setLoading(true);
     
     try {
+      console.log('Logging climb with data:', data);
+      
       // Auto-generate route name if not provided and it's gym bouldering
       let finalRouteName = data.routeName;
       if (!finalRouteName && data.climbType === 'boulder' && data.areaName.toLowerCase().includes('gym')) {
@@ -89,6 +91,8 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
       if (!finalRouteName) {
         finalRouteName = `Unnamed ${data.climbType} route`;
       }
+
+      console.log('Final route name:', finalRouteName);
 
       // First, find or create the area
       let { data: areas, error: areaError } = await supabase
@@ -102,6 +106,7 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
       let areaId = areas?.id;
 
       if (!areaId) {
+        console.log('Creating new area:', data.areaName);
         const { data: newArea, error: newAreaError } = await supabase
           .from('areas')
           .insert({
@@ -113,14 +118,24 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
 
         if (newAreaError) throw newAreaError;
         areaId = newArea.id;
+        console.log('Created area with ID:', areaId);
+      } else {
+        console.log('Using existing area with ID:', areaId);
       }
 
-      // Then, find or create the route
+      // Create a unique route identifier that includes grade, climb type, and area
+      // This ensures different grades create different routes even in the same area
+      const routeIdentifier = `${finalRouteName}_${data.grade}_${data.climbType}_${areaId}`;
+      console.log('Route identifier:', routeIdentifier);
+
+      // Look for existing route with the same name, grade, and climb type in this area
       let { data: routes, error: routeError } = await supabase
         .from('routes')
-        .select('id')
+        .select('id, grade, climb_type')
         .eq('name', finalRouteName)
         .eq('area_id', areaId)
+        .eq('grade', data.grade)
+        .eq('climb_type', data.climbType)
         .maybeSingle();
 
       if (routeError) throw routeError;
@@ -128,6 +143,13 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
       let routeId = routes?.id;
 
       if (!routeId) {
+        console.log('Creating new route:', {
+          name: finalRouteName,
+          grade: data.grade,
+          climbType: data.climbType,
+          areaId
+        });
+        
         const { data: newRoute, error: newRouteError } = await supabase
           .from('routes')
           .insert({
@@ -143,9 +165,13 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
 
         if (newRouteError) throw newRouteError;
         routeId = newRoute.id;
+        console.log('Created route with ID:', routeId, 'and grade:', data.grade);
+      } else {
+        console.log('Using existing route with ID:', routeId, 'and grade:', routes.grade);
       }
 
       // Finally, create the ascent
+      console.log('Creating ascent for route:', routeId);
       const { error: ascentError } = await supabase
         .from('ascents')
         .insert({
@@ -155,14 +181,16 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
           style: data.style || null,
           attempts: data.attempts,
           notes: data.notes || null,
-          rating: null, // Can be added later via edit
+          rating: null,
         });
 
       if (ascentError) throw ascentError;
 
+      console.log('Successfully logged climb!');
+
       toast({
         title: 'Climb logged successfully!',
-        description: `${finalRouteName} has been added to your climbing log.`,
+        description: `${finalRouteName} (${data.grade}) has been added to your climbing log.`,
       });
 
       form.reset();
