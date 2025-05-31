@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Target, Save, Play, Pause, CheckCircle } from 'lucide-react';
+import { Calendar, Target, Save, Play, Pause, CheckCircle, ArrowLeft, Clock, Dumbbell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ interface Exercise {
   duration?: string;
   rest?: string;
   notes?: string;
+  instructions?: string;
 }
 
 interface TrainingSession {
@@ -54,6 +55,7 @@ export function DetailedTrainingPlan() {
   const { user } = useAuth();
   const [savedPlans, setSavedPlans] = useState<TrainingPlan[]>([]);
   const [currentPlan, setCurrentPlan] = useState<TrainingPlan | null>(null);
+  const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [generating, setGenerating] = useState(false);
   
@@ -125,10 +127,38 @@ export function DetailedTrainingPlan() {
         duration: isDeloadWeek ? 60 : 90,
         intensity: isDeloadWeek ? 'low' : 'high',
         exercises: [
-          { name: 'Weighted Pull-ups', sets: isDeloadWeek ? 3 : 5, reps: isDeloadWeek ? '3-5' : '1-3', rest: '3min', notes: 'Add weight progressively' },
-          { name: 'Hangboard Max Hangs', sets: isDeloadWeek ? 3 : 5, duration: isDeloadWeek ? '7s' : '10s', rest: '3min', notes: '20mm edge, body weight' },
-          { name: 'Core Circuit', sets: 3, duration: '45s', rest: '15s', notes: 'Plank, side planks, hollow body' },
-          { name: 'Antagonist Training', sets: 2, reps: '10-15', rest: '1min', notes: 'Push-ups, tricep dips, wrist curls' }
+          { 
+            name: 'Weighted Pull-ups', 
+            sets: isDeloadWeek ? 3 : 5, 
+            reps: isDeloadWeek ? '3-5' : '1-3', 
+            rest: '3min', 
+            notes: 'Add weight progressively',
+            instructions: 'Start with bodyweight warm-up. Use belt or vest for added weight. Focus on full range of motion, dead hang to chin over bar. Rest fully between sets.'
+          },
+          { 
+            name: 'Hangboard Max Hangs', 
+            sets: isDeloadWeek ? 3 : 5, 
+            duration: isDeloadWeek ? '7s' : '10s', 
+            rest: '3min', 
+            notes: '20mm edge, body weight',
+            instructions: 'Warm up thoroughly first. Use 20mm edge in half-crimp position. Hang with shoulders engaged, not passive. If too easy, add weight; if too hard, use resistance band for assistance.'
+          },
+          { 
+            name: 'Core Circuit', 
+            sets: 3, 
+            duration: '45s', 
+            rest: '15s', 
+            notes: 'Plank, side planks, hollow body',
+            instructions: 'Perform each exercise for 45s with 15s transition: 1) Front plank with perfect form, 2) Right side plank, 3) Left side plank, 4) Hollow body hold. Focus on quality over quantity.'
+          },
+          { 
+            name: 'Antagonist Training', 
+            sets: 2, 
+            reps: '10-15', 
+            rest: '1min', 
+            notes: 'Push-ups, tricep dips, wrist curls',
+            instructions: 'Balance your climbing training: Push-ups for chest/triceps, tricep dips for elbow health, wrist curls both directions for forearm balance. Light resistance, focus on mobility.'
+          }
         ]
       });
 
@@ -142,9 +172,24 @@ export function DetailedTrainingPlan() {
         duration: 30,
         intensity: 'low',
         exercises: [
-          { name: 'Light Stretching', duration: '15min', notes: 'Focus on shoulders and forearms' },
-          { name: 'Foam Rolling', duration: '10min', notes: 'Full body, especially lats and legs' },
-          { name: 'Breathing Exercises', duration: '5min', notes: 'Diaphragmatic breathing for recovery' }
+          { 
+            name: 'Light Stretching', 
+            duration: '15min', 
+            notes: 'Focus on shoulders and forearms',
+            instructions: 'Gentle static stretches: shoulder circles, doorway chest stretch, forearm stretches, neck rolls. Hold each stretch 30-60 seconds, never force.'
+          },
+          { 
+            name: 'Foam Rolling', 
+            duration: '10min', 
+            notes: 'Full body, especially lats and legs',
+            instructions: 'Roll slowly over tight areas. Spend extra time on lats, IT band, calves. Avoid rolling directly on spine or joints. 1-2 minutes per muscle group.'
+          },
+          { 
+            name: 'Breathing Exercises', 
+            duration: '5min', 
+            notes: 'Diaphragmatic breathing for recovery',
+            instructions: 'Lie down comfortably. Place one hand on chest, one on belly. Breathe so only the hand on belly moves. 4 counts in, 6 counts out. Promotes recovery.'
+          }
         ]
       });
 
@@ -158,10 +203,24 @@ export function DetailedTrainingPlan() {
         duration: isDeloadWeek ? 60 : 120,
         intensity: isDeloadWeek ? 'low' : 'medium',
         exercises: [
-          { name: 'Warm-up', duration: '15min', notes: 'Easy traversing and mobility' },
-          { name: 'ARC Training', duration: isDeloadWeek ? '15min' : '30min', notes: 'Continuous climbing at 60-70% intensity' },
-          { name: '4x4 Pyramid', sets: isDeloadWeek ? 2 : 4, notes: 'Flash grade -2, rest 1min between problems' },
-          { name: 'Technique Drills', duration: '20min', notes: 'Silent feet, flagging, precise footwork' }
+          { 
+            name: 'Warm-up', 
+            duration: '15min', 
+            notes: 'Easy traversing and mobility',
+            instructions: 'Start with arm circles, leg swings. Then easy traverse problems or routes 2-3 grades below your limit. Gradually increase intensity.'
+          },
+          { 
+            name: 'ARC Training', 
+            duration: isDeloadWeek ? '15min' : '30min', 
+            notes: 'Continuous climbing at 60-70% intensity',
+            instructions: 'Aerobic Restoration and Capillarity training. Climb continuously at easy grade (flash -2 to -3). Keep moving, minimal rest on holds. Build capillary density.'
+          },
+          { 
+            name: '4x4 Pyramid', 
+            sets: isDeloadWeek ? 2 : 4, 
+            notes: 'Flash grade -2, rest 1min between problems',
+            instructions: 'Climb 4 problems in sequence with 1min rest between each. Problems should be flash grade -2. Rest 5min between sets. Builds power endurance.'
+          }
         ]
       });
 
@@ -187,10 +246,19 @@ export function DetailedTrainingPlan() {
         duration: isDeloadWeek ? 60 : 90,
         intensity: isDeloadWeek ? 'low' : 'high',
         exercises: [
-          { name: 'Dynamic Warm-up', duration: '20min', notes: 'Easy problems with dynamic moves' },
-          { name: 'Limit Problems', sets: isDeloadWeek ? 3 : 6, notes: `Flash grade to ${planForm.targetGrade}`, rest: '5min' },
-          { name: 'Campus Board', sets: isDeloadWeek ? 0 : 3, reps: '3-5', rest: '3min', notes: 'Progressive rungs 1-4 to 1-5' },
-          { name: 'Cool Down', duration: '10min', notes: 'Easy traversing and stretching' }
+          { 
+            name: 'Dynamic Warm-up', 
+            duration: '20min', 
+            notes: 'Easy problems with dynamic moves',
+            instructions: 'Start with gentle movements, progress to dynamic problems 3-4 grades below limit. Include coordination moves, mantles, and different hold types.'
+          },
+          { 
+            name: 'Limit Problems', 
+            sets: isDeloadWeek ? 3 : 6, 
+            notes: `Flash grade to ${planForm.targetGrade}`, 
+            rest: '5min',
+            instructions: `Try problems from flash grade up to ${planForm.targetGrade}. Focus on perfect technique. Rest fully between attempts. Quality over quantity.`
+          }
         ]
       });
 
@@ -204,10 +272,19 @@ export function DetailedTrainingPlan() {
         duration: 90,
         intensity: 'high',
         exercises: [
-          { name: 'Warm-up Pyramid', duration: '30min', notes: 'V0 to flash grade progression' },
-          { name: 'Project Attempts', sets: 3, notes: `Focus on ${planForm.targetGrade} problems`, rest: '10min' },
-          { name: 'Beta Analysis', duration: '15min', notes: 'Study sequences and rest positions' },
-          { name: 'Complementary Problems', sets: 2, notes: 'Similar style to project at lower grade' }
+          { 
+            name: 'Warm-up Pyramid', 
+            duration: '30min', 
+            notes: 'V0 to flash grade progression',
+            instructions: 'Progressive warm-up: Start V0, work up to flash grade over 30min. Include variety of hold types and movement styles.'
+          },
+          { 
+            name: 'Project Attempts', 
+            sets: 3, 
+            notes: `Focus on ${planForm.targetGrade} problems`, 
+            rest: '10min',
+            instructions: `Work specifically on ${planForm.targetGrade} problems. Break down sequences, work moves individually, then link. Film yourself for analysis.`
+          }
         ]
       });
 
@@ -221,9 +298,24 @@ export function DetailedTrainingPlan() {
         duration: 45,
         intensity: 'low',
         exercises: [
-          { name: 'Yoga Flow', duration: '25min', notes: 'Focus on shoulders, hips, and spine' },
-          { name: 'Finger Stretches', duration: '10min', notes: 'Gentle finger and forearm stretches' },
-          { name: 'Meditation', duration: '10min', notes: 'Mental recovery and focus training' }
+          { 
+            name: 'Yoga Flow', 
+            duration: '25min', 
+            notes: 'Focus on shoulders, hips, and spine',
+            instructions: 'Flowing sequence: cat-cow, downward dog, warrior poses, pigeon pose. Hold poses 1-2 minutes. Focus on areas tight from climbing.'
+          },
+          { 
+            name: 'Finger Stretches', 
+            duration: '10min', 
+            notes: 'Gentle finger and forearm stretches',
+            instructions: 'Prayer stretch, reverse prayer, individual finger extensions, wrist circles. Very gentle - fingers are delicate. Hold 30-60 seconds each.'
+          },
+          { 
+            name: 'Meditation', 
+            duration: '10min', 
+            notes: 'Mental recovery and focus training',
+            instructions: 'Comfortable seated position. Focus on breath or use guided meditation app. Mental training is crucial for climbing performance and recovery.'
+          }
         ]
       });
     }
@@ -262,7 +354,8 @@ export function DetailedTrainingPlan() {
             reps: exercise.reps,
             duration: exercise.duration,
             rest: exercise.rest,
-            notes: exercise.notes
+            notes: exercise.notes,
+            instructions: exercise.instructions
           }))
         })),
         gradeSystem: plan.gradeSystem
@@ -301,7 +394,8 @@ export function DetailedTrainingPlan() {
           reps: exercise.reps,
           duration: exercise.duration,
           rest: exercise.rest,
-          notes: exercise.notes
+          notes: exercise.notes,
+          instructions: exercise.instructions
         }))
       }));
 
@@ -323,7 +417,113 @@ export function DetailedTrainingPlan() {
   const loadPlan = (plan: TrainingPlan) => {
     setCurrentPlan(plan);
     setIsCreating(false);
+    setSelectedSession(null);
   };
+
+  const getDayName = (day: number) => {
+    if (day === 0) return 'Sunday';
+    return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day - 1];
+  };
+
+  // Session Detail View
+  if (selectedSession) {
+    return (
+      <Card className="bg-gray-900 border-gray-700">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setSelectedSession(null)}
+              className="text-gray-300 hover:text-white hover:bg-gray-800"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div>
+              <CardTitle className="text-white">
+                {getDayName(selectedSession.day)} - {selectedSession.title}
+              </CardTitle>
+              <CardDescription className="text-gray-300">
+                Week {selectedSession.week} • {selectedSession.description}
+              </CardDescription>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-2">
+            <Badge variant="outline" className="border-gray-600 text-gray-300">
+              <Clock className="h-3 w-3 mr-1" />
+              {selectedSession.duration}min
+            </Badge>
+            <Badge 
+              variant={selectedSession.intensity === 'high' ? 'destructive' : selectedSession.intensity === 'medium' ? 'default' : 'secondary'}
+            >
+              {selectedSession.intensity} intensity
+            </Badge>
+            <Badge variant="outline" className="border-gray-600 text-gray-300 capitalize">
+              {selectedSession.type}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {selectedSession.exercises.length > 0 ? (
+            <div className="space-y-4">
+              <h4 className="font-semibold text-white flex items-center">
+                <Dumbbell className="h-4 w-4 mr-2" />
+                Exercises ({selectedSession.exercises.length})
+              </h4>
+              {selectedSession.exercises.map((exercise, index) => (
+                <div key={index} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                  <div className="flex items-start justify-between mb-3">
+                    <h5 className="font-medium text-white text-lg">{exercise.name}</h5>
+                    <div className="flex gap-2 text-sm">
+                      {exercise.sets && (
+                        <Badge variant="secondary" className="bg-blue-600 text-white">
+                          {exercise.sets} sets
+                        </Badge>
+                      )}
+                      {exercise.reps && (
+                        <Badge variant="secondary" className="bg-green-600 text-white">
+                          {exercise.reps} reps
+                        </Badge>
+                      )}
+                      {exercise.duration && (
+                        <Badge variant="secondary" className="bg-purple-600 text-white">
+                          {exercise.duration}
+                        </Badge>
+                      )}
+                      {exercise.rest && (
+                        <Badge variant="secondary" className="bg-orange-600 text-white">
+                          Rest: {exercise.rest}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {exercise.instructions && (
+                    <div className="mb-3">
+                      <h6 className="font-medium text-blue-300 mb-1">Instructions:</h6>
+                      <p className="text-gray-300 text-sm leading-relaxed">{exercise.instructions}</p>
+                    </div>
+                  )}
+                  
+                  {exercise.notes && (
+                    <div>
+                      <h6 className="font-medium text-yellow-300 mb-1">Notes:</h6>
+                      <p className="text-gray-400 text-sm">{exercise.notes}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-400">Rest day - no exercises planned</p>
+              <p className="text-gray-500 text-sm mt-1">Focus on recovery and light movement</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isCreating) {
     return (
@@ -459,9 +659,13 @@ export function DetailedTrainingPlan() {
                   {currentPlan.sessions
                     .filter(session => session.week === weekIndex + 1)
                     .map((session, sessionIndex) => (
-                      <div key={sessionIndex} className="flex items-center justify-between p-2 bg-gray-700 rounded text-sm">
+                      <div 
+                        key={sessionIndex} 
+                        className="flex items-center justify-between p-3 bg-gray-700 rounded text-sm cursor-pointer hover:bg-gray-600 transition-colors"
+                        onClick={() => setSelectedSession(session)}
+                      >
                         <span className="font-medium text-white">
-                          {session.day === 0 ? 'Sunday' : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][session.day - 1]}
+                          {getDayName(session.day)}
                         </span>
                         <span className="text-gray-300">{session.title}</span>
                         <div className="flex items-center gap-2">
