@@ -11,7 +11,7 @@ interface FriendRequest {
   id: string;
   requester_id: string;
   created_at: string;
-  profiles?: {
+  requester_profile?: {
     username: string | null;
     full_name: string | null;
   };
@@ -37,17 +37,30 @@ export function FriendRequests() {
         .select(`
           id,
           requester_id,
-          created_at,
-          profiles!friendships_requester_id_fkey (
-            username,
-            full_name
-          )
+          created_at
         `)
         .eq('addressee_id', user.id)
         .eq('status', 'pending');
 
       if (error) throw error;
-      setRequests(data || []);
+
+      // Fetch profile data separately
+      const requestsWithProfiles = await Promise.all(
+        (data || []).map(async (request) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, full_name')
+            .eq('id', request.requester_id)
+            .single();
+
+          return {
+            ...request,
+            requester_profile: profile
+          };
+        })
+      );
+
+      setRequests(requestsWithProfiles);
     } catch (error) {
       console.error('Error fetching friend requests:', error);
     } finally {
@@ -110,16 +123,16 @@ export function FriendRequests() {
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>
-                      {request.profiles?.username?.charAt(0).toUpperCase() || 
-                       request.profiles?.full_name?.charAt(0).toUpperCase() || 'U'}
+                      {request.requester_profile?.username?.charAt(0).toUpperCase() || 
+                       request.requester_profile?.full_name?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">
-                      {request.profiles?.full_name || request.profiles?.username || 'Anonymous Climber'}
+                      {request.requester_profile?.full_name || request.requester_profile?.username || 'Anonymous Climber'}
                     </p>
-                    {request.profiles?.username && request.profiles?.full_name && (
-                      <p className="text-sm text-gray-500">@{request.profiles.username}</p>
+                    {request.requester_profile?.username && request.requester_profile?.full_name && (
+                      <p className="text-sm text-gray-500">@{request.requester_profile.username}</p>
                     )}
                     <p className="text-xs text-gray-400">
                       {new Date(request.created_at).toLocaleDateString()}

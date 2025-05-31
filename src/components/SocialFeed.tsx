@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Heart, MessageCircle, MapPin, Clock, Mountain } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, Clock, Mountain, Activity } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SessionComments } from '@/components/SessionComments';
@@ -17,10 +17,8 @@ interface FeedSession {
   duration_minutes: number | null;
   climb_type: string;
   notes: string | null;
-  areas?: {
-    name: string;
-  };
-  profiles?: {
+  area_name?: string;
+  user_profile?: {
     username: string;
     full_name: string;
   };
@@ -28,11 +26,9 @@ interface FeedSession {
     id: string;
     style: string | null;
     attempts: number | null;
-    routes?: {
-      name: string;
-      grade: string;
-      climb_type: string;
-    };
+    route_name?: string;
+    route_grade?: string;
+    route_climb_type?: string;
   }>;
   session_likes?: Array<{
     user_id: string;
@@ -56,54 +52,87 @@ export function SocialFeed() {
 
   const fetchFeedSessions = async () => {
     try {
-      const { data, error } = await supabase
+      // First get sessions
+      const { data: sessionsData, error: sessionsError } = await supabase
         .from('sessions')
-        .select(`
-          *,
-          areas (
-            name
-          ),
-          profiles (
-            username,
-            full_name
-          ),
-          ascents (
-            id,
-            style,
-            attempts,
-            routes (
-              name,
-              grade,
-              climb_type
-            )
-          ),
-          session_likes (
-            user_id
-          )
-        `)
+        .select('*')
         .eq('is_public', true)
         .not('end_time', 'is', null)
         .order('end_time', { ascending: false })
         .limit(20);
 
-      if (error) throw error;
+      if (sessionsError) throw sessionsError;
 
-      // Get comment counts for each session
-      const sessionsWithCounts = await Promise.all(
-        (data || []).map(async (session) => {
-          const { count } = await supabase
+      // Enhance each session with additional data
+      const enhancedSessions = await Promise.all(
+        (sessionsData || []).map(async (session) => {
+          // Get user profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, full_name')
+            .eq('id', session.user_id)
+            .single();
+
+          // Get area name
+          const { data: area } = await supabase
+            .from('areas')
+            .select('name')
+            .eq('id', session.area_id)
+            .single();
+
+          // Get ascents with route info
+          const { data: ascents } = await supabase
+            .from('ascents')
+            .select(`
+              id,
+              style,
+              attempts,
+              route_id
+            `)
+            .eq('session_id', session.id);
+
+          // Get route details for ascents
+          const ascentsWithRoutes = await Promise.all(
+            (ascents || []).map(async (ascent) => {
+              const { data: route } = await supabase
+                .from('routes')
+                .select('name, grade, climb_type')
+                .eq('id', ascent.route_id)
+                .single();
+
+              return {
+                ...ascent,
+                route_name: route?.name,
+                route_grade: route?.grade,
+                route_climb_type: route?.climb_type
+              };
+            })
+          );
+
+          // Get likes
+          const { data: likes } = await supabase
+            .from('session_likes')
+            .select('user_id')
+            .eq('session_id', session.id);
+
+          // Get comment count
+          const { count: commentCount } = await supabase
             .from('session_comments')
             .select('*', { count: 'exact', head: true })
             .eq('session_id', session.id);
 
           return {
             ...session,
-            _count: { session_comments: count || 0 }
+            user_profile: profile,
+            area_name: area?.name,
+            ascents: ascentsWithRoutes,
+            session_likes: likes || [],
+            _count: { session_comments: commentCount || 0 }
           };
         })
       );
 
-      setSessions(sessionsWithCounts);
+      setSessions(enhancedSessions);
     } catch (error) {
       console.error('Error fetching feed sessions:', error);
     } finally {
@@ -201,22 +230,22 @@ export function SocialFeed() {
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>
-                      {session.profiles?.username?.charAt(0).toUpperCase() || 'U'}
+                      {session.user_profile?.username?.charAt(0).toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">
-                      {session.profiles?.full_name || session.profiles?.username || 'Anonymous Climber'}
+                      {session.user_profile?.full_name || session.user_profile?.username || 'Anonymous Climber'}
                     </p>
                     <div className="flex items-center text-sm text-gray-500 space-x-2">
                       <Clock className="h-3 w-3" />
                       <span>
                         {formatDistanceToNow(new Date(session.end_time!), { addSuffix: true })}
                       </span>
-                      {session.areas && (
+                      {session.area_name && (
                         <>
                           <MapPin className="h-3 w-3" />
-                          <span>{session.areas.name}</span>
+                          <span>{session.area_name}</span>
                         </>
                       )}
                     </div>
@@ -243,11 +272,11 @@ export function SocialFeed() {
                     {session.ascents.slice(0, 3).map((ascent) => (
                       <div key={ascent.id} className="flex items-center justify-between text-sm bg-gray-50 p-2 rounded">
                         <span className="font-medium">
-                          {ascent.routes?.name || 'Unnamed Route'}
+                          {ascent.route_name || 'Unnamed Route'}
                         </span>
                         <div className="flex items-center space-x-2">
                           <span className="text-blue-600 font-medium">
-                            {ascent.routes?.grade}
+                            {ascent.route_grade}
                           </span>
                           {ascent.style && (
                             <span className="text-green-600 text-xs bg-green-100 px-2 py-1 rounded">

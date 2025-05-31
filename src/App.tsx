@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
-import Routes from '@/pages/Routes';
+import RoutesPage from '@/pages/Routes';
 import Progress from '@/pages/Progress';
 import Social from '@/pages/Social';
 import NotFound from '@/pages/NotFound';
@@ -41,7 +41,7 @@ function AppContent() {
       <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Index />} />
       <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/dashboard" />} />
       <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/auth" />} />
-      <Route path="/routes" element={user ? <Routes /> : <Navigate to="/auth" />} />
+      <Route path="/routes" element={user ? <RoutesPage /> : <Navigate to="/auth" />} />
       <Route path="/progress" element={user ? <Progress /> : <Navigate to="/auth" />} />
       <Route path="/social" element={user ? <Social /> : <Navigate to="/auth" />} />
       <Route path="*" element={<NotFound />} />

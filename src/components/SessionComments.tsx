@@ -11,7 +11,8 @@ interface Comment {
   id: string;
   content: string;
   created_at: string;
-  profiles?: {
+  user_id: string;
+  user_profile?: {
     username: string;
     full_name: string;
   };
@@ -37,18 +38,29 @@ export function SessionComments({ sessionId, onCommentAdded }: SessionCommentsPr
     try {
       const { data, error } = await supabase
         .from('session_comments')
-        .select(`
-          *,
-          profiles (
-            username,
-            full_name
-          )
-        `)
+        .select('*')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setComments(data || []);
+
+      // Fetch user profiles for each comment
+      const commentsWithProfiles = await Promise.all(
+        (data || []).map(async (comment) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('username, full_name')
+            .eq('id', comment.user_id)
+            .single();
+
+          return {
+            ...comment,
+            user_profile: profile
+          };
+        })
+      );
+
+      setComments(commentsWithProfiles);
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {
@@ -92,14 +104,14 @@ export function SessionComments({ sessionId, onCommentAdded }: SessionCommentsPr
           <div key={comment.id} className="flex space-x-3">
             <Avatar className="h-8 w-8">
               <AvatarFallback className="text-xs">
-                {comment.profiles?.username?.charAt(0).toUpperCase() || 'U'}
+                {comment.user_profile?.username?.charAt(0).toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-medium text-sm">
-                    {comment.profiles?.full_name || comment.profiles?.username || 'Anonymous'}
+                    {comment.user_profile?.full_name || comment.user_profile?.username || 'Anonymous'}
                   </span>
                   <span className="text-xs text-gray-500">
                     {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}

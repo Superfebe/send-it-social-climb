@@ -12,7 +12,7 @@ interface SearchResult {
   id: string;
   username: string | null;
   full_name: string | null;
-  friendship_status?: 'none' | 'pending' | 'accepted';
+  friendship_status: 'none' | 'pending' | 'accepted';
 }
 
 export function FindFriends() {
@@ -47,7 +47,7 @@ export function FindFriends() {
 
           return {
             ...profile,
-            friendship_status: friendship ? friendship.status : 'none'
+            friendship_status: (friendship ? friendship.status : 'none') as 'none' | 'pending' | 'accepted'
           };
         })
       );
@@ -78,7 +78,7 @@ export function FindFriends() {
       setSearchResults(results =>
         results.map(result =>
           result.id === friendId
-            ? { ...result, friendship_status: 'pending' }
+            ? { ...result, friendship_status: 'pending' as const }
             : result
         )
       );

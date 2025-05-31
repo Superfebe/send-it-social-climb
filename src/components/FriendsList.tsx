@@ -34,34 +34,32 @@ export function FriendsList() {
         .select(`
           id,
           requester_id,
-          addressee_id,
-          profiles!friendships_requester_id_fkey (
-            id,
-            username,
-            full_name
-          ),
-          addressee_profiles:profiles!friendships_addressee_id_fkey (
-            id,
-            username,
-            full_name
-          )
+          addressee_id
         `)
         .eq('status', 'accepted')
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
       if (error) throw error;
 
-      const friendsData = (data || []).map((friendship) => {
-        const isRequester = friendship.requester_id === user.id;
-        const friendProfile = isRequester ? friendship.addressee_profiles : friendship.profiles;
-        
-        return {
-          id: friendProfile.id,
-          username: friendProfile.username,
-          full_name: friendProfile.full_name,
-          friendship_id: friendship.id
-        };
-      });
+      const friendsData = await Promise.all(
+        (data || []).map(async (friendship) => {
+          const isRequester = friendship.requester_id === user.id;
+          const friendId = isRequester ? friendship.addressee_id : friendship.requester_id;
+          
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, username, full_name')
+            .eq('id', friendId)
+            .single();
+
+          return {
+            id: profile?.id || friendId,
+            username: profile?.username || null,
+            full_name: profile?.full_name || null,
+            friendship_id: friendship.id
+          };
+        })
+      );
 
       setFriends(friendsData);
     } catch (error) {
