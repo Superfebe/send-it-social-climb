@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,7 +66,7 @@ export function ProgressDashboard() {
       if (!user) return;
 
       try {
-        // Fetch all user ascents with route data
+        // Fetch all user ascents with route data - including session-linked climbs
         const { data: ascents, error } = await supabase
           .from('ascents')
           .select(`
@@ -80,6 +79,13 @@ export function ProgressDashboard() {
               areas (
                 name
               )
+            ),
+            sessions (
+              id,
+              start_time,
+              areas (
+                name
+              )
             )
           `)
           .eq('user_id', user.id)
@@ -88,7 +94,7 @@ export function ProgressDashboard() {
         if (error) throw error;
 
         if (ascents) {
-          console.log('Fetched ascents with full data:', ascents);
+          console.log('Fetched ascents with full data including sessions:', ascents);
           const processedStats = processProgressData(ascents);
           setStats(processedStats);
         }
@@ -103,7 +109,7 @@ export function ProgressDashboard() {
   }, [user]);
 
   const processProgressData = (ascents: any[]): ProgressStats => {
-    console.log('Processing progress data for', ascents.length, 'ascents');
+    console.log('Processing progress data for', ascents.length, 'ascents (including session climbs)');
     console.log('Sample ascent data:', ascents[0]);
     
     const stats: ProgressStats = {
@@ -127,9 +133,17 @@ export function ProgressDashboard() {
       favoriteGrades: []
     };
 
-    // Calculate session count (unique dates)
+    // Calculate session count - include both unique dates and unique session IDs
     const uniqueDates = [...new Set(ascents.map(a => a.date_climbed))];
-    stats.totalSessions = uniqueDates.length;
+    const uniqueSessionIds = [...new Set(ascents.filter(a => a.session_id).map(a => a.session_id))];
+    
+    // Total sessions includes both standalone climbs (by date) and actual tracked sessions
+    const standaloneClimbDates = ascents
+      .filter(a => !a.session_id)
+      .map(a => a.date_climbed);
+    const uniqueStandaloneDates = [...new Set(standaloneClimbDates)];
+    
+    stats.totalSessions = uniqueStandaloneDates.length + uniqueSessionIds.length;
     stats.avgClimbsPerSession = stats.totalSessions > 0 ? stats.totalClimbs / stats.totalSessions : 0;
 
     // Calculate send rates
@@ -141,9 +155,12 @@ export function ProgressDashboard() {
     stats.flashRate = ascents.length > 0 ? (flashClimbs.length / ascents.length) * 100 : 0;
     stats.onsightRate = ascents.length > 0 ? (onsightClimbs.length / ascents.length) * 100 : 0;
 
-    // Calculate outdoor vs indoor
+    // Calculate outdoor vs indoor - check both route area and session area
     ascents.forEach(ascent => {
-      const isGym = ascent.routes?.areas?.name?.toLowerCase().includes('gym') || false;
+      const routeAreaName = ascent.routes?.areas?.name?.toLowerCase() || '';
+      const sessionAreaName = ascent.sessions?.areas?.name?.toLowerCase() || '';
+      const isGym = routeAreaName.includes('gym') || sessionAreaName.includes('gym');
+      
       if (isGym) {
         stats.outdoorVsIndoor.indoor++;
       } else {
@@ -290,7 +307,7 @@ export function ProgressDashboard() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
 
-    console.log('Final processed stats:', stats);
+    console.log('Final processed stats (including session climbs):', stats);
     return stats;
   };
 
