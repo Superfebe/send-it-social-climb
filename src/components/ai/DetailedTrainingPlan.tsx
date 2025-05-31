@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Calendar, Target, Save, Play, Pause, CheckCircle, ArrowLeft, Clock, Dumbbell } from 'lucide-react';
+import { Calendar, Target, Save, Play, Pause, CheckCircle, ArrowLeft, Clock, Dumbbell, Trash } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -113,43 +113,48 @@ export function DetailedTrainingPlan() {
     
     const sessions: TrainingSession[] = [];
     
-    // Generate sessions for each week
+    // Generate sessions for each week (using actual duration from form)
     for (let week = 1; week <= planForm.durationWeeks; week++) {
       const isDeloadWeek = week % 4 === 0;
+      const weekProgress = (week - 1) / (planForm.durationWeeks - 1); // 0 to 1 progression
+      const difficultyMultiplier = 0.7 + (weekProgress * 0.3); // Start at 70%, progress to 100%
       
       // Monday - Strength Training
+      const strengthSets = isDeloadWeek ? 3 : Math.min(3 + Math.floor(weekProgress * 3), 6);
+      const hangboardDuration = isDeloadWeek ? '7s' : `${Math.min(7 + Math.floor(weekProgress * 5), 12)}s`;
+      
       sessions.push({
         week,
         day: 1,
         type: 'strength',
-        title: isDeloadWeek ? 'Deload Strength' : 'Max Strength',
-        description: isDeloadWeek ? 'Reduced intensity strength work' : 'Focus on maximum strength development',
-        duration: isDeloadWeek ? 60 : 90,
-        intensity: isDeloadWeek ? 'low' : 'high',
+        title: isDeloadWeek ? 'Deload Strength' : `Max Strength - Week ${week}`,
+        description: isDeloadWeek ? 'Reduced intensity strength work' : `Focus on maximum strength development - ${Math.round(difficultyMultiplier * 100)}% intensity`,
+        duration: isDeloadWeek ? 60 : Math.min(90 + Math.floor(weekProgress * 20), 120),
+        intensity: isDeloadWeek ? 'low' : (weekProgress > 0.6 ? 'high' : 'medium'),
         exercises: [
           { 
             name: 'Weighted Pull-ups', 
-            sets: isDeloadWeek ? 3 : 5, 
-            reps: isDeloadWeek ? '3-5' : '1-3', 
+            sets: strengthSets, 
+            reps: isDeloadWeek ? '3-5' : (weekProgress > 0.5 ? '1-3' : '3-5'), 
             rest: '3min', 
-            notes: 'Add weight progressively',
+            notes: `Add ${Math.round(weekProgress * 20)}% bodyweight progressively`,
             instructions: 'Start with bodyweight warm-up. Use belt or vest for added weight. Focus on full range of motion, dead hang to chin over bar. Rest fully between sets.'
           },
           { 
             name: 'Hangboard Max Hangs', 
-            sets: isDeloadWeek ? 3 : 5, 
-            duration: isDeloadWeek ? '7s' : '10s', 
+            sets: strengthSets, 
+            duration: hangboardDuration, 
             rest: '3min', 
-            notes: '20mm edge, body weight',
+            notes: `20mm edge, ${isDeloadWeek ? 'bodyweight' : `+${Math.round(weekProgress * 15)}kg`}`,
             instructions: 'Warm up thoroughly first. Use 20mm edge in half-crimp position. Hang with shoulders engaged, not passive. If too easy, add weight; if too hard, use resistance band for assistance.'
           },
           { 
             name: 'Core Circuit', 
             sets: 3, 
-            duration: '45s', 
+            duration: `${Math.min(45 + Math.floor(weekProgress * 15), 60)}s`, 
             rest: '15s', 
             notes: 'Plank, side planks, hollow body',
-            instructions: 'Perform each exercise for 45s with 15s transition: 1) Front plank with perfect form, 2) Right side plank, 3) Left side plank, 4) Hollow body hold. Focus on quality over quantity.'
+            instructions: 'Perform each exercise for duration with 15s transition: 1) Front plank with perfect form, 2) Right side plank, 3) Left side plank, 4) Hollow body hold. Focus on quality over quantity.'
           },
           { 
             name: 'Antagonist Training', 
@@ -194,14 +199,17 @@ export function DetailedTrainingPlan() {
       });
 
       // Wednesday - Climbing Volume
+      const arcDuration = isDeloadWeek ? '15min' : `${Math.min(20 + Math.floor(weekProgress * 15), 35)}min`;
+      const pyramidSets = isDeloadWeek ? 2 : Math.min(3 + Math.floor(weekProgress * 2), 5);
+      
       sessions.push({
         week,
         day: 3,
         type: 'climbing',
-        title: isDeloadWeek ? 'Easy Volume' : 'Endurance Training',
-        description: isDeloadWeek ? 'Easy climbing at low grades' : 'Build climbing endurance and technique',
-        duration: isDeloadWeek ? 60 : 120,
-        intensity: isDeloadWeek ? 'low' : 'medium',
+        title: isDeloadWeek ? 'Easy Volume' : `Endurance Training - Week ${week}`,
+        description: isDeloadWeek ? 'Easy climbing at low grades' : `Build climbing endurance and technique - ${Math.round(difficultyMultiplier * 100)}% volume`,
+        duration: isDeloadWeek ? 60 : Math.min(90 + Math.floor(weekProgress * 30), 150),
+        intensity: isDeloadWeek ? 'low' : (weekProgress > 0.7 ? 'high' : 'medium'),
         exercises: [
           { 
             name: 'Warm-up', 
@@ -211,15 +219,15 @@ export function DetailedTrainingPlan() {
           },
           { 
             name: 'ARC Training', 
-            duration: isDeloadWeek ? '15min' : '30min', 
-            notes: 'Continuous climbing at 60-70% intensity',
+            duration: arcDuration, 
+            notes: `Continuous climbing at ${Math.round(60 + weekProgress * 10)}% intensity`,
             instructions: 'Aerobic Restoration and Capillarity training. Climb continuously at easy grade (flash -2 to -3). Keep moving, minimal rest on holds. Build capillary density.'
           },
           { 
             name: '4x4 Pyramid', 
-            sets: isDeloadWeek ? 2 : 4, 
-            notes: 'Flash grade -2, rest 1min between problems',
-            instructions: 'Climb 4 problems in sequence with 1min rest between each. Problems should be flash grade -2. Rest 5min between sets. Builds power endurance.'
+            sets: pyramidSets, 
+            notes: `Flash grade -${3 - Math.floor(weekProgress)}, rest 1min between problems`,
+            instructions: `Climb 4 problems in sequence with 1min rest between each. Problems should be flash grade -${3 - Math.floor(weekProgress)}. Rest 5min between sets. Builds power endurance.`
           }
         ]
       });
@@ -237,13 +245,15 @@ export function DetailedTrainingPlan() {
       });
 
       // Friday - Power Training
+      const limitSets = isDeloadWeek ? 3 : Math.min(4 + Math.floor(weekProgress * 3), 8);
+      
       sessions.push({
         week,
         day: 5,
         type: 'climbing',
-        title: isDeloadWeek ? 'Light Bouldering' : 'Limit Bouldering',
-        description: isDeloadWeek ? 'Easy problems for movement' : 'Work at maximum grade',
-        duration: isDeloadWeek ? 60 : 90,
+        title: isDeloadWeek ? 'Light Bouldering' : `Limit Bouldering - Week ${week}`,
+        description: isDeloadWeek ? 'Easy problems for movement' : `Work at maximum grade - ${Math.round(difficultyMultiplier * 100)}% intensity`,
+        duration: isDeloadWeek ? 60 : Math.min(75 + Math.floor(weekProgress * 25), 120),
         intensity: isDeloadWeek ? 'low' : 'high',
         exercises: [
           { 
@@ -254,10 +264,10 @@ export function DetailedTrainingPlan() {
           },
           { 
             name: 'Limit Problems', 
-            sets: isDeloadWeek ? 3 : 6, 
-            notes: `Flash grade to ${planForm.targetGrade}`, 
+            sets: limitSets, 
+            notes: `Flash grade to ${planForm.targetGrade}${weekProgress > 0.6 ? ' and beyond' : ''}`, 
             rest: '5min',
-            instructions: `Try problems from flash grade up to ${planForm.targetGrade}. Focus on perfect technique. Rest fully between attempts. Quality over quantity.`
+            instructions: `Try problems from flash grade up to ${planForm.targetGrade}${weekProgress > 0.6 ? ' and one grade harder' : ''}. Focus on perfect technique. Rest fully between attempts. Quality over quantity.`
           }
         ]
       });
@@ -267,10 +277,10 @@ export function DetailedTrainingPlan() {
         week,
         day: 6,
         type: 'climbing',
-        title: 'Project Session',
-        description: 'Work on target grade projects',
-        duration: 90,
-        intensity: 'high',
+        title: `Project Session - Week ${week}`,
+        description: `Work on target grade projects - ${Math.round(difficultyMultiplier * 100)}% focus`,
+        duration: Math.min(90 + Math.floor(weekProgress * 20), 120),
+        intensity: weekProgress > 0.5 ? 'high' : 'medium',
         exercises: [
           { 
             name: 'Warm-up Pyramid', 
@@ -280,10 +290,10 @@ export function DetailedTrainingPlan() {
           },
           { 
             name: 'Project Attempts', 
-            sets: 3, 
-            notes: `Focus on ${planForm.targetGrade} problems`, 
+            sets: Math.min(2 + Math.floor(weekProgress * 2), 4), 
+            notes: `Focus on ${planForm.targetGrade} problems${weekProgress > 0.7 ? ' and harder projects' : ''}`, 
             rest: '10min',
-            instructions: `Work specifically on ${planForm.targetGrade} problems. Break down sequences, work moves individually, then link. Film yourself for analysis.`
+            instructions: `Work specifically on ${planForm.targetGrade} problems${weekProgress > 0.7 ? ' and attempt projects one grade harder' : ''}. Break down sequences, work moves individually, then link. Film yourself for analysis.`
           }
         ]
       });
@@ -293,14 +303,14 @@ export function DetailedTrainingPlan() {
         week,
         day: 0,
         type: 'mobility',
-        title: 'Mobility & Recovery',
+        title: `Mobility & Recovery - Week ${week}`,
         description: 'Maintain flexibility and aid recovery',
-        duration: 45,
+        duration: Math.min(45 + Math.floor(weekProgress * 15), 60),
         intensity: 'low',
         exercises: [
           { 
             name: 'Yoga Flow', 
-            duration: '25min', 
+            duration: `${Math.min(25 + Math.floor(weekProgress * 10), 35)}min`, 
             notes: 'Focus on shoulders, hips, and spine',
             instructions: 'Flowing sequence: cat-cow, downward dog, warrior poses, pigeon pose. Hold poses 1-2 minutes. Focus on areas tight from climbing.'
           },
@@ -321,8 +331,8 @@ export function DetailedTrainingPlan() {
     }
 
     const newPlan: TrainingPlan = {
-      title: `${planForm.targetGrade} Training Plan`,
-      description: `${planForm.durationWeeks}-week plan to achieve ${planForm.targetGoal}`,
+      title: `${planForm.targetGrade} Training Plan (${planForm.durationWeeks} weeks)`,
+      description: `${planForm.durationWeeks}-week progressive plan to achieve ${planForm.targetGoal}`,
       targetGoal: planForm.targetGoal,
       targetGrade: planForm.targetGrade,
       gradeSystem: planForm.gradeSystem,
@@ -411,6 +421,29 @@ export function DetailedTrainingPlan() {
     } catch (error) {
       console.error('Error saving plan:', error);
       toast.error('Failed to save training plan');
+    }
+  };
+
+  const deletePlan = async (planId: string) => {
+    try {
+      const { error } = await supabase
+        .from('training_plans')
+        .delete()
+        .eq('id', planId);
+
+      if (error) throw error;
+
+      toast.success('Training plan deleted successfully!');
+      loadSavedPlans();
+      
+      // If the deleted plan was currently viewed, go back to plans list
+      if (currentPlan?.id === planId) {
+        setCurrentPlan(null);
+      }
+      
+    } catch (error) {
+      console.error('Error deleting plan:', error);
+      toast.error('Failed to delete training plan');
     }
   };
 
@@ -650,10 +683,10 @@ export function DetailedTrainingPlan() {
               Weekly Schedule Preview
             </h4>
             
-            {Array.from({length: Math.min(2, currentPlan.durationWeeks)}, (_, weekIndex) => (
+            {Array.from({length: Math.min(4, currentPlan.durationWeeks)}, (_, weekIndex) => (
               <div key={weekIndex} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
                 <h5 className="font-medium mb-3 text-white">
-                  Week {weekIndex + 1} {weekIndex === 3 ? '(Deload Week)' : ''}
+                  Week {weekIndex + 1} {(weekIndex + 1) % 4 === 0 ? '(Deload Week)' : ''}
                 </h5>
                 <div className="grid gap-2">
                   {currentPlan.sessions
@@ -683,6 +716,17 @@ export function DetailedTrainingPlan() {
                 </div>
               </div>
             ))}
+            
+            {currentPlan.durationWeeks > 4 && (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">
+                  Showing first 4 weeks. Click on any day to see detailed exercises.
+                </p>
+                <p className="text-gray-500 text-xs mt-1">
+                  Full {currentPlan.durationWeeks}-week plan includes progressive difficulty scaling.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -719,11 +763,22 @@ export function DetailedTrainingPlan() {
                   <div className="flex gap-2 mt-1">
                     <Badge variant="outline" className="border-gray-600 text-gray-300">{plan.targetGrade}</Badge>
                     <Badge variant="secondary" className="bg-gray-700 text-gray-200">{plan.status}</Badge>
+                    <Badge variant="outline" className="border-gray-600 text-gray-300">{plan.durationWeeks} weeks</Badge>
                   </div>
                 </div>
-                <Button variant="outline" onClick={() => loadPlan(plan)} className="border-gray-600 text-gray-300 hover:bg-gray-700">
-                  View Plan
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => loadPlan(plan)} className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                    View Plan
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => deletePlan(plan.id!)}
+                    className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
