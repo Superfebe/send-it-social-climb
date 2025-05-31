@@ -38,10 +38,18 @@ interface TrainingPlan {
   description: string;
   targetGoal: string;
   targetGrade: string;
+  gradeSystem: string;
   durationWeeks: number;
   sessions: TrainingSession[];
   status: 'active' | 'completed' | 'paused';
 }
+
+const gradeSystemOptions = {
+  'V-Scale': ['V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12'],
+  'Font': ['3', '4', '4+', '5', '5+', '6A', '6A+', '6B', '6B+', '6C', '6C+', '7A', '7A+', '7B', '7B+', '7C', '7C+', '8A', '8A+', '8B', '8B+'],
+  'YDS': ['5.6', '5.7', '5.8', '5.9', '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d', '5.12a', '5.12b', '5.12c', '5.12d'],
+  'UIAA': ['IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']
+};
 
 export function DetailedTrainingPlan() {
   const { user } = useAuth();
@@ -53,6 +61,7 @@ export function DetailedTrainingPlan() {
   const [planForm, setPlanForm] = useState({
     targetGoal: '',
     targetGrade: 'V5',
+    gradeSystem: 'V-Scale',
     durationWeeks: 8,
     experience: 'intermediate'
   });
@@ -73,16 +82,20 @@ export function DetailedTrainingPlan() {
 
       if (error) throw error;
 
-      const plans = data?.map(plan => ({
-        id: plan.id,
-        title: plan.title,
-        description: plan.description,
-        targetGoal: plan.target_goal,
-        targetGrade: plan.target_grade,
-        durationWeeks: plan.duration_weeks,
-        status: plan.status,
-        sessions: plan.plan_data?.sessions || []
-      })) || [];
+      const plans = data?.map(plan => {
+        const planData = plan.plan_data as any;
+        return {
+          id: plan.id,
+          title: plan.title,
+          description: plan.description,
+          targetGoal: plan.target_goal,
+          targetGrade: plan.target_grade || 'V5',
+          gradeSystem: planData?.gradeSystem || 'V-Scale',
+          durationWeeks: plan.duration_weeks,
+          status: plan.status as 'active' | 'completed' | 'paused',
+          sessions: planData?.sessions || []
+        };
+      }) || [];
 
       setSavedPlans(plans);
     } catch (error) {
@@ -221,6 +234,7 @@ export function DetailedTrainingPlan() {
       description: `${planForm.durationWeeks}-week plan to achieve ${planForm.targetGoal}`,
       targetGoal: planForm.targetGoal,
       targetGrade: planForm.targetGrade,
+      gradeSystem: planForm.gradeSystem,
       durationWeeks: planForm.durationWeeks,
       sessions,
       status: 'active'
@@ -243,7 +257,10 @@ export function DetailedTrainingPlan() {
           target_grade: plan.targetGrade,
           duration_weeks: plan.durationWeeks,
           status: plan.status,
-          plan_data: { sessions: plan.sessions }
+          plan_data: { 
+            sessions: plan.sessions,
+            gradeSystem: plan.gradeSystem
+          }
         })
         .select()
         .single();
@@ -260,7 +277,7 @@ export function DetailedTrainingPlan() {
         description: session.description,
         estimated_duration_minutes: session.duration,
         intensity_level: session.intensity,
-        exercises: session.exercises
+        exercises: session.exercises as any
       }));
 
       const { error: sessionError } = await supabase
@@ -285,37 +302,34 @@ export function DetailedTrainingPlan() {
 
   if (isCreating) {
     return (
-      <Card>
+      <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
-          <CardTitle>Create Training Plan</CardTitle>
-          <CardDescription>Design a personalized training plan for your climbing goals</CardDescription>
+          <CardTitle className="text-white">Create Training Plan</CardTitle>
+          <CardDescription className="text-gray-300">Design a personalized training plan for your climbing goals</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="targetGoal">Training Goal</Label>
+              <Label htmlFor="targetGoal" className="text-gray-300">Training Goal</Label>
               <Input
                 id="targetGoal"
                 placeholder="e.g., Send V6 outdoors in 8 weeks"
                 value={planForm.targetGoal}
                 onChange={(e) => setPlanForm({...planForm, targetGoal: e.target.value})}
+                className="bg-gray-800 border-gray-600 text-white"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="targetGrade">Target Grade</Label>
-              <Select value={planForm.targetGrade} onValueChange={(value) => setPlanForm({...planForm, targetGrade: value})}>
-                <SelectTrigger>
+              <Label htmlFor="gradeSystem" className="text-gray-300">Grade System</Label>
+              <Select value={planForm.gradeSystem} onValueChange={(value) => setPlanForm({...planForm, gradeSystem: value, targetGrade: gradeSystemOptions[value as keyof typeof gradeSystemOptions][4]})}>
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="V3">V3</SelectItem>
-                  <SelectItem value="V4">V4</SelectItem>
-                  <SelectItem value="V5">V5</SelectItem>
-                  <SelectItem value="V6">V6</SelectItem>
-                  <SelectItem value="V7">V7</SelectItem>
-                  <SelectItem value="V8">V8</SelectItem>
-                  <SelectItem value="V9">V9</SelectItem>
-                  <SelectItem value="V10">V10</SelectItem>
+                  <SelectItem value="V-Scale">V-Scale (USA Bouldering)</SelectItem>
+                  <SelectItem value="Font">Font (European Bouldering)</SelectItem>
+                  <SelectItem value="YDS">YDS (USA Sport)</SelectItem>
+                  <SelectItem value="UIAA">UIAA (European Sport)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -323,7 +337,20 @@ export function DetailedTrainingPlan() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="duration">Duration (weeks)</Label>
+              <Label htmlFor="targetGrade" className="text-gray-300">Target Grade</Label>
+              <Select value={planForm.targetGrade} onValueChange={(value) => setPlanForm({...planForm, targetGrade: value})}>
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {gradeSystemOptions[planForm.gradeSystem as keyof typeof gradeSystemOptions].map((grade) => (
+                    <SelectItem key={grade} value={grade}>{grade}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="duration" className="text-gray-300">Duration (weeks)</Label>
               <Input
                 id="duration"
                 type="number"
@@ -331,28 +358,30 @@ export function DetailedTrainingPlan() {
                 max="16"
                 value={planForm.durationWeeks}
                 onChange={(e) => setPlanForm({...planForm, durationWeeks: parseInt(e.target.value)})}
+                className="bg-gray-800 border-gray-600 text-white"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="experience">Experience Level</Label>
-              <Select value={planForm.experience} onValueChange={(value) => setPlanForm({...planForm, experience: value})}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="beginner">Beginner (V0-V3)</SelectItem>
-                  <SelectItem value="intermediate">Intermediate (V4-V6)</SelectItem>
-                  <SelectItem value="advanced">Advanced (V7+)</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="experience" className="text-gray-300">Experience Level</Label>
+            <Select value={planForm.experience} onValueChange={(value) => setPlanForm({...planForm, experience: value})}>
+              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="beginner">Beginner</SelectItem>
+                <SelectItem value="intermediate">Intermediate</SelectItem>
+                <SelectItem value="advanced">Advanced</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex gap-2">
-            <Button onClick={generateDetailedPlan} disabled={generating || !planForm.targetGoal}>
+            <Button onClick={generateDetailedPlan} disabled={generating || !planForm.targetGoal} className="bg-blue-600 hover:bg-blue-700">
               {generating ? 'Generating...' : 'Generate Plan'}
             </Button>
-            <Button variant="outline" onClick={() => setIsCreating(false)}>
+            <Button variant="outline" onClick={() => setIsCreating(false)} className="border-gray-600 text-gray-300 hover:bg-gray-800">
               Cancel
             </Button>
           </div>
@@ -363,51 +392,55 @@ export function DetailedTrainingPlan() {
 
   if (currentPlan) {
     return (
-      <Card>
+      <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between text-white">
             <span>{currentPlan.title}</span>
             <div className="flex gap-2">
-              <Badge variant="outline">{currentPlan.durationWeeks} weeks</Badge>
-              <Badge variant="secondary">{currentPlan.status}</Badge>
+              <Badge variant="outline" className="border-gray-600 text-gray-300">{currentPlan.durationWeeks} weeks</Badge>
+              <Badge variant="secondary" className="bg-gray-700 text-gray-200">{currentPlan.status}</Badge>
             </div>
           </CardTitle>
-          <CardDescription>{currentPlan.description}</CardDescription>
+          <CardDescription className="text-gray-300">{currentPlan.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-800 rounded-lg">
             <div>
-              <span className="text-sm text-gray-600">Target Goal:</span>
-              <p className="font-medium">{currentPlan.targetGoal}</p>
+              <span className="text-sm text-gray-400">Target Goal:</span>
+              <p className="font-medium text-white">{currentPlan.targetGoal}</p>
             </div>
             <div>
-              <span className="text-sm text-gray-600">Target Grade:</span>
-              <p className="font-medium">{currentPlan.targetGrade}</p>
+              <span className="text-sm text-gray-400">Target Grade:</span>
+              <p className="font-medium text-white">{currentPlan.targetGrade} ({currentPlan.gradeSystem})</p>
+            </div>
+            <div>
+              <span className="text-sm text-gray-400">Duration:</span>
+              <p className="font-medium text-white">{currentPlan.durationWeeks} weeks</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-semibold flex items-center">
+            <h4 className="font-semibold flex items-center text-white">
               <Calendar className="h-4 w-4 mr-2" />
               Weekly Schedule Preview
             </h4>
             
             {Array.from({length: Math.min(2, currentPlan.durationWeeks)}, (_, weekIndex) => (
-              <div key={weekIndex} className="border rounded-lg p-4">
-                <h5 className="font-medium mb-3">
+              <div key={weekIndex} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
+                <h5 className="font-medium mb-3 text-white">
                   Week {weekIndex + 1} {weekIndex === 3 ? '(Deload Week)' : ''}
                 </h5>
                 <div className="grid gap-2">
                   {currentPlan.sessions
                     .filter(session => session.week === weekIndex + 1)
                     .map((session, sessionIndex) => (
-                      <div key={sessionIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
-                        <span className="font-medium">
+                      <div key={sessionIndex} className="flex items-center justify-between p-2 bg-gray-700 rounded text-sm">
+                        <span className="font-medium text-white">
                           {session.day === 0 ? 'Sunday' : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][session.day - 1]}
                         </span>
-                        <span>{session.title}</span>
+                        <span className="text-gray-300">{session.title}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-600">{session.duration}min</span>
+                          <span className="text-gray-400">{session.duration}min</span>
                           <Badge 
                             variant={session.intensity === 'high' ? 'destructive' : session.intensity === 'medium' ? 'default' : 'secondary'}
                             className="text-xs"
@@ -425,12 +458,12 @@ export function DetailedTrainingPlan() {
 
           <div className="flex gap-2">
             {!currentPlan.id && (
-              <Button onClick={() => savePlan(currentPlan)} className="flex items-center">
+              <Button onClick={() => savePlan(currentPlan)} className="flex items-center bg-green-600 hover:bg-green-700">
                 <Save className="h-4 w-4 mr-2" />
                 Save Plan
               </Button>
             )}
-            <Button variant="outline" onClick={() => setCurrentPlan(null)}>
+            <Button variant="outline" onClick={() => setCurrentPlan(null)} className="border-gray-600 text-gray-300 hover:bg-gray-800">
               Back to Plans
             </Button>
           </div>
@@ -440,26 +473,26 @@ export function DetailedTrainingPlan() {
   }
 
   return (
-    <Card>
+    <Card className="bg-gray-900 border-gray-700">
       <CardHeader>
-        <CardTitle>Training Plans</CardTitle>
-        <CardDescription>Create and manage detailed climbing training plans</CardDescription>
+        <CardTitle className="text-white">Training Plans</CardTitle>
+        <CardDescription className="text-gray-300">Create and manage detailed climbing training plans</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {savedPlans.length > 0 ? (
           <div className="space-y-3">
-            <h4 className="font-medium">Your Plans</h4>
+            <h4 className="font-medium text-white">Your Plans</h4>
             {savedPlans.map((plan) => (
-              <div key={plan.id} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={plan.id} className="flex items-center justify-between p-3 border border-gray-700 rounded-lg bg-gray-800">
                 <div>
-                  <h5 className="font-medium">{plan.title}</h5>
-                  <p className="text-sm text-gray-600">{plan.description}</p>
+                  <h5 className="font-medium text-white">{plan.title}</h5>
+                  <p className="text-sm text-gray-400">{plan.description}</p>
                   <div className="flex gap-2 mt-1">
-                    <Badge variant="outline">{plan.targetGrade}</Badge>
-                    <Badge variant="secondary">{plan.status}</Badge>
+                    <Badge variant="outline" className="border-gray-600 text-gray-300">{plan.targetGrade}</Badge>
+                    <Badge variant="secondary" className="bg-gray-700 text-gray-200">{plan.status}</Badge>
                   </div>
                 </div>
-                <Button variant="outline" onClick={() => loadPlan(plan)}>
+                <Button variant="outline" onClick={() => loadPlan(plan)} className="border-gray-600 text-gray-300 hover:bg-gray-700">
                   View Plan
                 </Button>
               </div>
@@ -467,11 +500,11 @@ export function DetailedTrainingPlan() {
           </div>
         ) : (
           <div className="text-center py-6">
-            <p className="text-gray-600 mb-4">No training plans yet. Create your first one!</p>
+            <p className="text-gray-400 mb-4">No training plans yet. Create your first one!</p>
           </div>
         )}
         
-        <Button onClick={() => setIsCreating(true)} className="w-full">
+        <Button onClick={() => setIsCreating(true)} className="w-full bg-blue-600 hover:bg-blue-700">
           <Target className="h-4 w-4 mr-2" />
           Create New Training Plan
         </Button>

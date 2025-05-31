@@ -61,7 +61,15 @@ export function StrengthTracker() {
         .order('exercise_name');
 
       if (error) throw error;
-      setStandards(data || []);
+      
+      const formattedStandards = data?.map(item => ({
+        exercise_name: item.exercise_name,
+        description: item.description || '',
+        measurement_unit: item.measurement_unit,
+        benchmarks: item.benchmarks as any
+      })) || [];
+      
+      setStandards(formattedStandards);
     } catch (error) {
       console.error('Error loading strength standards:', error);
     }
@@ -161,16 +169,16 @@ export function StrengthTracker() {
 
   if (isLogging) {
     return (
-      <Card>
+      <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
-          <CardTitle>Log Strength Test</CardTitle>
-          <CardDescription>Record your latest strength test results</CardDescription>
+          <CardTitle className="text-white">Log Strength Test</CardTitle>
+          <CardDescription className="text-gray-300">Record your latest strength test results</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="exercise">Exercise</Label>
+            <Label htmlFor="exercise" className="text-gray-300">Exercise</Label>
             <Select value={selectedExercise} onValueChange={setSelectedExercise}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                 <SelectValue placeholder="Select an exercise" />
               </SelectTrigger>
               <SelectContent>
@@ -185,7 +193,7 @@ export function StrengthTracker() {
 
           {selectedExercise && (
             <div className="space-y-2">
-              <Label htmlFor="value">
+              <Label htmlFor="value" className="text-gray-300">
                 Value ({standards.find(s => s.exercise_name === selectedExercise)?.measurement_unit})
               </Label>
               <Input
@@ -195,25 +203,27 @@ export function StrengthTracker() {
                 value={logForm.value}
                 onChange={(e) => setLogForm({...logForm, value: e.target.value})}
                 placeholder="Enter your result"
+                className="bg-gray-800 border-gray-600 text-white"
               />
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
+            <Label htmlFor="notes" className="text-gray-300">Notes (optional)</Label>
             <Textarea
               id="notes"
               value={logForm.notes}
               onChange={(e) => setLogForm({...logForm, notes: e.target.value})}
               placeholder="Any observations about the test..."
+              className="bg-gray-800 border-gray-600 text-white"
             />
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={logStrengthTest} disabled={!selectedExercise || !logForm.value}>
+            <Button onClick={logStrengthTest} disabled={!selectedExercise || !logForm.value} className="bg-green-600 hover:bg-green-700">
               Save Test
             </Button>
-            <Button variant="outline" onClick={() => setIsLogging(false)}>
+            <Button variant="outline" onClick={() => setIsLogging(false)} className="border-gray-600 text-gray-300 hover:bg-gray-800">
               Cancel
             </Button>
           </div>
@@ -224,19 +234,19 @@ export function StrengthTracker() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center">
+            <span className="flex items-center text-white">
               <TrendingUp className="h-5 w-5 mr-2" />
               Strength Tracking
             </span>
-            <Button onClick={() => setIsLogging(true)}>
+            <Button onClick={() => setIsLogging(true)} className="bg-blue-600 hover:bg-blue-700">
               <Plus className="h-4 w-4 mr-2" />
               Log Test
             </Button>
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-gray-300">
             Track your climbing-specific strength metrics and compare to standards
           </CardDescription>
         </CardHeader>
@@ -249,11 +259,11 @@ export function StrengthTracker() {
               const history = getExerciseHistory(standard.exercise_name);
 
               return (
-                <div key={standard.exercise_name} className="border rounded-lg p-4">
+                <div key={standard.exercise_name} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h4 className="font-medium">{standard.description}</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-medium text-white">{standard.description}</h4>
+                      <p className="text-sm text-gray-400">
                         Current: {latestLog ? `${latestLog.value} ${standard.measurement_unit}` : 'Not tested'}
                       </p>
                     </div>
@@ -269,11 +279,11 @@ export function StrengthTracker() {
                   {latestLog && (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span>Progress to Elite</span>
-                        <span>{progress.toFixed(0)}%</span>
+                        <span className="text-gray-300">Progress to Elite</span>
+                        <span className="text-gray-300">{progress.toFixed(0)}%</span>
                       </div>
                       <Progress value={progress} className="h-2" />
-                      <div className="grid grid-cols-4 gap-2 text-xs text-gray-600">
+                      <div className="grid grid-cols-4 gap-2 text-xs text-gray-400">
                         <div>Beginner: {standard.benchmarks.beginner}{standard.measurement_unit}</div>
                         <div>Intermediate: {standard.benchmarks.intermediate}{standard.measurement_unit}</div>
                         <div>Advanced: {standard.benchmarks.advanced}{standard.measurement_unit}</div>
@@ -284,7 +294,7 @@ export function StrengthTracker() {
 
                   {history.length > 1 && (
                     <div className="mt-4">
-                      <h5 className="text-sm font-medium mb-2">Progress Chart</h5>
+                      <h5 className="text-sm font-medium mb-2 text-gray-300">Progress Chart</h5>
                       <div className="h-24">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={history}>
