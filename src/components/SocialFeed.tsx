@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Heart, MessageCircle, MapPin, Clock, Mountain, Activity } from 'lucide-react';
@@ -52,7 +52,7 @@ export function SocialFeed() {
 
   const fetchFeedSessions = async () => {
     try {
-      // First get sessions
+      // Get sessions
       const { data: sessionsData, error: sessionsError } = await supabase
         .from('sessions')
         .select('*')
@@ -83,12 +83,7 @@ export function SocialFeed() {
           // Get ascents with route info
           const { data: ascents } = await supabase
             .from('ascents')
-            .select(`
-              id,
-              style,
-              attempts,
-              route_id
-            `)
+            .select('id, style, attempts, route_id')
             .eq('session_id', session.id);
 
           // Get route details for ascents
@@ -147,14 +142,12 @@ export function SocialFeed() {
       const existingLike = sessions.find(s => s.id === sessionId)?.session_likes?.find(l => l.user_id === user.id);
 
       if (existingLike) {
-        // Unlike
         await supabase
           .from('session_likes')
           .delete()
           .eq('session_id', sessionId)
           .eq('user_id', user.id);
       } else {
-        // Like
         await supabase
           .from('session_likes')
           .insert({
@@ -163,7 +156,6 @@ export function SocialFeed() {
           });
       }
 
-      // Refresh the feed
       fetchFeedSessions();
     } catch (error) {
       console.error('Error toggling like:', error);
@@ -175,21 +167,19 @@ export function SocialFeed() {
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
           <Card key={i} className="animate-pulse">
-            <CardHeader>
-              <div className="flex items-center space-x-3">
+            <div className="p-6">
+              <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
                 <div className="space-y-2">
                   <div className="w-32 h-4 bg-gray-300 rounded"></div>
                   <div className="w-24 h-3 bg-gray-300 rounded"></div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
               <div className="space-y-2">
                 <div className="w-full h-4 bg-gray-300 rounded"></div>
                 <div className="w-3/4 h-4 bg-gray-300 rounded"></div>
               </div>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>
@@ -225,8 +215,8 @@ export function SocialFeed() {
 
         return (
           <Card key={session.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>
@@ -240,7 +230,7 @@ export function SocialFeed() {
                     <div className="flex items-center text-sm text-gray-500 space-x-2">
                       <Clock className="h-3 w-3" />
                       <span>
-                        {formatDistanceToNow(new Date(session.end_time!), { addSuffix: true })}
+                        {session.end_time && formatDistanceToNow(new Date(session.end_time), { addSuffix: true })}
                       </span>
                       {session.area_name && (
                         <>
@@ -258,9 +248,7 @@ export function SocialFeed() {
                   )}
                 </div>
               </div>
-            </CardHeader>
 
-            <CardContent>
               {session.notes && (
                 <p className="text-gray-700 mb-4">{session.notes}</p>
               )}
@@ -332,7 +320,7 @@ export function SocialFeed() {
                   />
                 </div>
               )}
-            </CardContent>
+            </div>
           </Card>
         );
       })}
