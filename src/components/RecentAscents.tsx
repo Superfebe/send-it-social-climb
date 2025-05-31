@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Mountain, Trophy, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { SessionCard } from './SessionCard';
 
 interface Ascent {
   id: string;
@@ -24,16 +25,34 @@ interface Ascent {
   };
 }
 
+interface Session {
+  id: string;
+  start_time: string;
+  end_time: string | null;
+  duration_minutes: number | null;
+  climb_type: string;
+  notes: string | null;
+  areas?: {
+    name: string;
+  };
+}
+
 export function RecentAscents() {
   const [ascents, setAscents] = useState<Ascent[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
   useEffect(() => {
-    async function fetchAscents() {
-      if (!user) return;
+    fetchData();
+  }, [user]);
 
-      const { data, error } = await supabase
+  const fetchData = async () => {
+    if (!user) return;
+
+    try {
+      // Fetch individual ascents
+      const { data: ascentsData, error: ascentsError } = await supabase
         .from('ascents')
         .select(`
           id,
@@ -56,16 +75,36 @@ export function RecentAscents() {
         .order('date_climbed', { ascending: false })
         .limit(10);
 
-      if (error) {
-        console.error('Error fetching ascents:', error);
-      } else {
-        setAscents(data || []);
-      }
+      if (ascentsError) throw ascentsError;
+
+      // Fetch recent sessions
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('sessions')
+        .select(`
+          id,
+          start_time,
+          end_time,
+          duration_minutes,
+          climb_type,
+          notes,
+          areas (
+            name
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('start_time', { ascending: false })
+        .limit(10);
+
+      if (sessionsError) throw sessionsError;
+
+      setAscents(ascentsData || []);
+      setSessions(sessionsData || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
       setLoading(false);
     }
-
-    fetchAscents();
-  }, [user]);
+  };
 
   const getStyleIcon = (style: string) => {
     switch (style?.toLowerCase()) {
@@ -107,29 +146,11 @@ export function RecentAscents() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Recent Climbs</CardTitle>
+          <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-gray-500">Loading your climbs...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (ascents.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Climbs</CardTitle>
-          <CardDescription>Your latest climbing achievements</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8">
-            <Mountain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 mb-2">No climbs logged yet!</p>
-            <p className="text-sm text-gray-400">Use the "Log New Climb" button to get started</p>
+            <p className="text-gray-500">Loading your activity...</p>
           </div>
         </CardContent>
       </Card>
@@ -139,76 +160,109 @@ export function RecentAscents() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Climbs</CardTitle>
-        <CardDescription>Your latest climbing achievements</CardDescription>
+        <CardTitle>Recent Activity</CardTitle>
+        <CardDescription>Your latest climbing sessions and individual climbs</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {ascents.map((ascent) => (
-            <div key={ascent.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-semibold text-lg">{ascent.routes.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {ascent.routes.grade}
-                    </Badge>
-                    <span className="text-xs text-gray-500">
-                      {formatGradeSystem(ascent.routes.difficulty_system)}
-                    </span>
-                  </div>
-                </div>
-                <Badge 
-                  variant="outline" 
-                  className={`text-xs capitalize ${ascent.style ? getStyleColor(ascent.style) : ''}`}
-                >
-                  <span className="flex items-center gap-1">
-                    {ascent.style && getStyleIcon(ascent.style)}
-                    {ascent.style || 'Climbed'}
-                  </span>
-                </Badge>
-              </div>
-              
-              <div className="flex items-center text-sm text-gray-600 mb-3">
-                <Calendar className="h-4 w-4 mr-1" />
-                <span>{new Date(ascent.date_climbed).toLocaleDateString()}</span>
-                <span className="mx-2">•</span>
-                <span className="capitalize">{ascent.routes.climb_type}</span>
-                {ascent.routes.areas && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <span>{ascent.routes.areas.name}</span>
-                  </>
-                )}
-              </div>
+        <Tabs defaultValue="sessions" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="sessions">Sessions</TabsTrigger>
+            <TabsTrigger value="climbs">Individual Climbs</TabsTrigger>
+          </TabsList>
 
-              <div className="flex items-center gap-3 mb-2">
-                <Badge variant="outline" className="text-xs">
-                  {ascent.attempts} attempt{ascent.attempts !== 1 ? 's' : ''}
-                </Badge>
-                {ascent.rating && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-xs text-gray-500">Rating:</span>
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <span
-                          key={i}
-                          className={`text-xs ${i < ascent.rating ? 'text-yellow-400' : 'text-gray-300'}`}
-                        >
-                          ★
+          <TabsContent value="sessions" className="mt-6">
+            {sessions.length === 0 ? (
+              <div className="text-center py-8">
+                <Mountain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-2">No sessions logged yet!</p>
+                <p className="text-sm text-gray-400">Start a session to track your climbing</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {sessions.map((session) => (
+                  <SessionCard key={session.id} session={session} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="climbs" className="mt-6">
+            {ascents.length === 0 ? (
+              <div className="text-center py-8">
+                <Mountain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-2">No climbs logged yet!</p>
+                <p className="text-sm text-gray-400">Use the "Log New Climb" button to get started</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {ascents.map((ascent) => (
+                  <div key={ascent.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-semibold text-lg">{ascent.routes.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="secondary" className="text-xs">
+                            {ascent.routes.grade}
+                          </Badge>
+                          <span className="text-xs text-gray-500">
+                            {formatGradeSystem(ascent.routes.difficulty_system)}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs capitalize ${ascent.style ? getStyleColor(ascent.style) : ''}`}
+                      >
+                        <span className="flex items-center gap-1">
+                          {ascent.style && getStyleIcon(ascent.style)}
+                          {ascent.style || 'Climbed'}
                         </span>
-                      ))}
+                      </Badge>
                     </div>
-                  </div>
-                )}
-              </div>
+                    
+                    <div className="flex items-center text-sm text-gray-600 mb-3">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      <span>{new Date(ascent.date_climbed).toLocaleDateString()}</span>
+                      <span className="mx-2">•</span>
+                      <span className="capitalize">{ascent.routes.climb_type}</span>
+                      {ascent.routes.areas && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <span>{ascent.routes.areas.name}</span>
+                        </>
+                      )}
+                    </div>
 
-              {ascent.notes && (
-                <p className="text-sm text-gray-600 mt-2 italic">"{ascent.notes}"</p>
-              )}
-            </div>
-          ))}
-        </div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Badge variant="outline" className="text-xs">
+                        {ascent.attempts} attempt{ascent.attempts !== 1 ? 's' : ''}
+                      </Badge>
+                      {ascent.rating && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs text-gray-500">Rating:</span>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <span
+                                key={i}
+                                className={`text-xs ${i < ascent.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {ascent.notes && (
+                      <p className="text-sm text-gray-600 mt-2 italic">"{ascent.notes}"</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
