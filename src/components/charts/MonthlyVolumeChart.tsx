@@ -42,7 +42,12 @@ export function MonthlyVolumeChart({ data }: MonthlyVolumeChartProps) {
         const dayKey = date.toLocaleDateString('en-US', { weekday: 'short' });
         const dateKey = date.toISOString().split('T')[0];
         
-        const existingData = data.find(d => d.month === dateKey);
+        // Find climbs for this specific date
+        const existingData = data.find(d => {
+          // Check if the data month matches the exact date
+          return d.month === dateKey;
+        });
+        
         result.push({
           month: dayKey,
           climbs: existingData?.climbs || 0,
@@ -60,7 +65,12 @@ export function MonthlyVolumeChart({ data }: MonthlyVolumeChartProps) {
         const dateKey = date.toISOString().split('T')[0];
         const displayKey = day.toString();
         
-        const existingData = data.find(d => d.month === dateKey);
+        // Find climbs for this specific date
+        const existingData = data.find(d => {
+          // Check if the data month matches the exact date
+          return d.month === dateKey;
+        });
+        
         result.push({
           month: displayKey,
           climbs: existingData?.climbs || 0,
@@ -76,11 +86,20 @@ export function MonthlyVolumeChart({ data }: MonthlyVolumeChartProps) {
         const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
         const yearMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
         
-        const existingData = data.find(d => d.month.startsWith(yearMonth) || d.month === monthKey);
+        // Find climbs for this month - sum up all days in the month
+        const monthlyClimbs = data.filter(d => {
+          // Check if the data month starts with the year-month pattern
+          return d.month && d.month.startsWith(yearMonth);
+        }).reduce((sum, d) => sum + (d.climbs || 0), 0);
+        
+        const monthlySessions = data.filter(d => {
+          return d.month && d.month.startsWith(yearMonth);
+        }).reduce((sum, d) => sum + (d.sessions || 0), 0);
+        
         result.push({
           month: monthKey,
-          climbs: existingData?.climbs || 0,
-          sessions: existingData?.sessions || 0
+          climbs: monthlyClimbs,
+          sessions: monthlySessions
         });
       }
     }

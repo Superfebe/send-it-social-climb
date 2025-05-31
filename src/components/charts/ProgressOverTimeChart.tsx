@@ -38,7 +38,11 @@ export function ProgressOverTimeChart({ data }: ProgressOverTimeChartProps) {
         const dayKey = date.toLocaleDateString('en-US', { weekday: 'short' });
         const dateKey = date.toISOString().split('T')[0];
         
-        const existingData = data.find(d => d.month === dateKey);
+        // Find climbs for this specific date
+        const existingData = data.find(d => {
+          return d.month === dateKey;
+        });
+        
         result.push({
           month: dayKey,
           climbs: existingData?.climbs || 0,
@@ -56,7 +60,11 @@ export function ProgressOverTimeChart({ data }: ProgressOverTimeChartProps) {
         const dateKey = date.toISOString().split('T')[0];
         const displayKey = day.toString();
         
-        const existingData = data.find(d => d.month === dateKey);
+        // Find climbs for this specific date
+        const existingData = data.find(d => {
+          return d.month === dateKey;
+        });
+        
         result.push({
           month: displayKey,
           climbs: existingData?.climbs || 0,
@@ -72,11 +80,23 @@ export function ProgressOverTimeChart({ data }: ProgressOverTimeChartProps) {
         const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
         const yearMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
         
-        const existingData = data.find(d => d.month.startsWith(yearMonth) || d.month === monthKey);
+        // Find climbs for this month - sum up all days in the month
+        const monthlyClimbs = data.filter(d => {
+          return d.month && d.month.startsWith(yearMonth);
+        }).reduce((sum, d) => sum + (d.climbs || 0), 0);
+        
+        // Calculate average grade for the month
+        const monthlyData = data.filter(d => {
+          return d.month && d.month.startsWith(yearMonth);
+        });
+        const avgGrade = monthlyData.length > 0 
+          ? monthlyData.reduce((sum, d) => sum + (d.avgGrade || 0), 0) / monthlyData.length
+          : 0;
+        
         result.push({
           month: monthKey,
-          climbs: existingData?.climbs || 0,
-          avgGrade: existingData?.avgGrade || 0
+          climbs: monthlyClimbs,
+          avgGrade: avgGrade
         });
       }
     }
