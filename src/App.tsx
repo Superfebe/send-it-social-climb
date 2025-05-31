@@ -11,6 +11,7 @@ import RoutesPage from '@/pages/Routes';
 import Progress from '@/pages/Progress';
 import Social from '@/pages/Social';
 import Profile from '@/pages/Profile';
+import UserProfilePage from '@/pages/UserProfile';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
