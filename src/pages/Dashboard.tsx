@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mountain, TrendingUp, Star, Calendar } from 'lucide-react';
+import { Mountain, TrendingUp, Star, Calendar, Target } from 'lucide-react';
 import { RecentAscents } from '@/components/RecentAscents';
 import { ClimbingStats } from '@/components/ClimbingStats';
 import { LogClimbForm } from '@/components/LogClimbForm';
