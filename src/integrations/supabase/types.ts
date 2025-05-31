@@ -320,6 +320,167 @@ export type Database = {
           },
         ]
       }
+      strength_logs: {
+        Row: {
+          created_at: string
+          exercise_name: string
+          id: string
+          measurement_unit: string
+          notes: string | null
+          test_date: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          exercise_name: string
+          id?: string
+          measurement_unit: string
+          notes?: string | null
+          test_date?: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          created_at?: string
+          exercise_name?: string
+          id?: string
+          measurement_unit?: string
+          notes?: string | null
+          test_date?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      strength_standards: {
+        Row: {
+          benchmarks: Json
+          created_at: string
+          description: string | null
+          exercise_name: string
+          id: string
+          measurement_unit: string
+        }
+        Insert: {
+          benchmarks: Json
+          created_at?: string
+          description?: string | null
+          exercise_name: string
+          id?: string
+          measurement_unit: string
+        }
+        Update: {
+          benchmarks?: Json
+          created_at?: string
+          description?: string | null
+          exercise_name?: string
+          id?: string
+          measurement_unit?: string
+        }
+        Relationships: []
+      }
+      training_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          duration_weeks: number
+          id: string
+          plan_data: Json
+          status: string | null
+          target_goal: string
+          target_grade: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          duration_weeks: number
+          id?: string
+          plan_data: Json
+          status?: string | null
+          target_goal: string
+          target_grade?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          duration_weeks?: number
+          id?: string
+          plan_data?: Json
+          status?: string | null
+          target_goal?: string
+          target_grade?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      training_sessions: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          day_number: number
+          description: string | null
+          estimated_duration_minutes: number | null
+          exercises: Json
+          id: string
+          intensity_level: string | null
+          notes: string | null
+          session_type: string
+          title: string
+          training_plan_id: string
+          week_number: number
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          day_number: number
+          description?: string | null
+          estimated_duration_minutes?: number | null
+          exercises: Json
+          id?: string
+          intensity_level?: string | null
+          notes?: string | null
+          session_type: string
+          title: string
+          training_plan_id: string
+          week_number: number
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          estimated_duration_minutes?: number | null
+          exercises?: Json
+          id?: string
+          intensity_level?: string | null
+          notes?: string | null
+          session_type?: string
+          title?: string
+          training_plan_id?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_training_plan_id_fkey"
+            columns: ["training_plan_id"]
+            isOneToOne: false
+            referencedRelation: "training_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wishlists: {
         Row: {
           created_at: string
