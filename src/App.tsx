@@ -10,6 +10,7 @@ import Dashboard from '@/pages/Dashboard';
 import RoutesPage from '@/pages/Routes';
 import Progress from '@/pages/Progress';
 import Social from '@/pages/Social';
+import Profile from '@/pages/Profile';
 import NotFound from '@/pages/NotFound';
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ function AppContent() {
       <Route path="/routes" element={user ? <RoutesPage /> : <Navigate to="/auth" />} />
       <Route path="/progress" element={user ? <Progress /> : <Navigate to="/auth" />} />
       <Route path="/social" element={user ? <Social /> : <Navigate to="/auth" />} />
+      <Route path="/profile" element={user ? <Profile /> : <Navigate to="/auth" />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
