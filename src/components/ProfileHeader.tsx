@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Camera, Check, X } from 'lucide-react';
+import { Camera, Check, X, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type Profile = {
