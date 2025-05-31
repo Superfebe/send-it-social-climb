@@ -89,7 +89,7 @@ export function QuickLogForm({ session, onSuccess }: QuickLogFormProps) {
         .eq('name', finalRouteName)
         .eq('area_id', session.area_id)
         .eq('grade', data.grade)
-        .eq('climb_type', session.climb_type)
+        .eq('climb_type', session.climb_type as 'sport' | 'trad' | 'boulder' | 'aid' | 'mixed' | 'ice')
         .maybeSingle();
 
       if (routeError) throw routeError;
@@ -102,7 +102,7 @@ export function QuickLogForm({ session, onSuccess }: QuickLogFormProps) {
           .insert({
             name: finalRouteName,
             area_id: session.area_id,
-            climb_type: session.climb_type,
+            climb_type: session.climb_type as 'sport' | 'trad' | 'boulder' | 'aid' | 'mixed' | 'ice',
             grade: data.grade,
             difficulty_system: data.difficultySystem,
             created_by: user.id,
