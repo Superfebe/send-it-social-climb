@@ -16,7 +16,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
-  routeName: z.string().min(1, 'Route name is required'),
+  routeName: z.string().optional(),
   areaName: z.string().min(1, 'Location is required'),
   climbType: z.enum(['sport', 'trad', 'boulder', 'aid', 'mixed', 'ice']),
   grade: z.string().min(1, 'Grade is required'),
@@ -33,6 +33,13 @@ type FormData = z.infer<typeof formSchema>;
 interface LogClimbFormProps {
   onSuccess?: () => void;
 }
+
+const gradeOptions = {
+  v_scale: ['VB', 'V0', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17'],
+  yds: ['5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9', '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d', '5.12a', '5.12b', '5.12c', '5.12d', '5.13a', '5.13b', '5.13c', '5.13d', '5.14a', '5.14b', '5.14c', '5.14d', '5.15a', '5.15b', '5.15c', '5.15d'],
+  french: ['1', '2', '3', '4a', '4b', '4c', '5a', '5b', '5c', '6a', '6a+', '6b', '6b+', '6c', '6c+', '7a', '7a+', '7b', '7b+', '7c', '7c+', '8a', '8a+', '8b', '8b+', '8c', '8c+', '9a', '9a+', '9b', '9b+', '9c'],
+  uiaa: ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VII+', 'VIII-', 'VIII', 'VIII+', 'IX-', 'IX', 'IX+', 'X-', 'X', 'X+', 'XI-', 'XI', 'XI+', 'XII-', 'XII']
+};
 
 export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
   const [open, setOpen] = useState(false);
@@ -56,12 +63,33 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
     },
   });
 
+  const selectedDifficultySystem = form.watch('difficultySystem');
+  const selectedClimbType = form.watch('climbType');
+
+  // Auto-generate route name for gym bouldering
+  const generateRouteName = (grade: string, climbType: string, areaName: string) => {
+    if (climbType === 'boulder' && areaName.toLowerCase().includes('gym')) {
+      return `${grade} Boulder Problem`;
+    }
+    return '';
+  };
+
   const onSubmit = async (data: FormData) => {
     if (!user) return;
     
     setLoading(true);
     
     try {
+      // Auto-generate route name if not provided and it's gym bouldering
+      let finalRouteName = data.routeName;
+      if (!finalRouteName && data.climbType === 'boulder' && data.areaName.toLowerCase().includes('gym')) {
+        finalRouteName = generateRouteName(data.grade, data.climbType, data.areaName);
+      }
+      
+      if (!finalRouteName) {
+        finalRouteName = `Unnamed ${data.climbType} route`;
+      }
+
       // First, find or create the area
       let { data: areas, error: areaError } = await supabase
         .from('areas')
@@ -91,7 +119,7 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
       let { data: routes, error: routeError } = await supabase
         .from('routes')
         .select('id')
-        .eq('name', data.routeName)
+        .eq('name', finalRouteName)
         .eq('area_id', areaId)
         .maybeSingle();
 
@@ -103,7 +131,7 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
         const { data: newRoute, error: newRouteError } = await supabase
           .from('routes')
           .insert({
-            name: data.routeName,
+            name: finalRouteName,
             area_id: areaId,
             climb_type: data.climbType,
             grade: data.grade,
@@ -134,7 +162,7 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
 
       toast({
         title: 'Climb logged successfully!',
-        description: `${data.routeName} has been added to your climbing log.`,
+        description: `${finalRouteName} has been added to your climbing log.`,
       });
 
       form.reset();
@@ -173,20 +201,6 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="routeName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Route Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Crimpy McFace" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <FormField
               control={form.control}
               name="areaName"
@@ -259,8 +273,42 @@ export function LogClimbForm({ onSuccess }: LogClimbFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Grade</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select grade" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {gradeOptions[selectedDifficultySystem].map((grade) => (
+                        <SelectItem key={grade} value={grade}>
+                          {grade}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="routeName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Route Name {selectedClimbType === 'boulder' ? '(Optional for gym bouldering)' : ''}
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., 5.10a, V5, 6a" {...field} />
+                    <Input 
+                      placeholder={
+                        selectedClimbType === 'boulder' 
+                          ? "Leave empty for auto-naming" 
+                          : "e.g., Crimpy McFace"
+                      } 
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
