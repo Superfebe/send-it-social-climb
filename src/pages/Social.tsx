@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Mountain, Users, UserPlus, Activity, Menu } from 'lucide-react';
+import { Mountain, Users, UserPlus, Activity, Menu, User } from 'lucide-react';
 import { SocialFeed } from '@/components/SocialFeed';
 import { FriendsList } from '@/components/FriendsList';
 import { FriendRequests } from '@/components/FriendRequests';
@@ -25,6 +25,10 @@ export default function Social() {
       </Button>
       <Button variant="ghost" onClick={() => window.location.href = '/progress'}>
         Progress
+      </Button>
+      <Button variant="ghost" onClick={() => window.location.href = '/profile'}>
+        <User className="h-4 w-4 mr-2" />
+        Profile
       </Button>
       <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
         <span className="text-sm text-gray-700 truncate">Welcome, {user?.email}</span>
