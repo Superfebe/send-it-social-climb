@@ -49,6 +49,7 @@ function AppContent() {
       <Route path="/progress" element={user ? <Progress /> : <Navigate to="/auth" />} />
       <Route path="/social" element={user ? <Social /> : <Navigate to="/auth" />} />
       <Route path="/profile" element={user ? <Profile /> : <Navigate to="/auth" />} />
+      <Route path="/profile/:userId" element={user ? <UserProfilePage /> : <Navigate to="/auth" />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
