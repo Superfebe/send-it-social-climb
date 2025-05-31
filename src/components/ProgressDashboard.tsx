@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +13,7 @@ import { MonthlyVolumeChart } from './charts/MonthlyVolumeChart';
 import { GradeProgressionChart } from './charts/GradeProgressionChart';
 import { AttemptsAnalysisChart } from './charts/AttemptsAnalysisChart';
 import { StyleAnalysisChart } from './charts/StyleAnalysisChart';
+import { StatsSelector } from './StatsSelector';
 
 interface ProgressStats {
   totalClimbs: number;
@@ -278,45 +278,15 @@ export function ProgressDashboard() {
         </CardHeader>
       </Card>
 
-      {/* Enhanced Key Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600">{stats.totalClimbs}</div>
-            <div className="text-xs text-gray-500">Total Climbs</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">{stats.totalSessions}</div>
-            <div className="text-xs text-gray-500">Sessions</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-indigo-600">{stats.avgClimbsPerSession.toFixed(1)}</div>
-            <div className="text-xs text-gray-500">Avg per Session</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600">{stats.sendRate.toFixed(1)}%</div>
-            <div className="text-xs text-gray-500">Send Rate</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-600">{stats.flashRate.toFixed(1)}%</div>
-            <div className="text-xs text-gray-500">Flash Rate</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600">{stats.onsightRate.toFixed(1)}%</div>
-            <div className="text-xs text-gray-500">Onsight Rate</div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Enhanced Key Stats Overview with Compact Selector */}
+      <StatsSelector 
+        totalClimbs={stats.totalClimbs}
+        totalSessions={stats.totalSessions}
+        avgClimbsPerSession={stats.avgClimbsPerSession}
+        sendRate={stats.sendRate}
+        flashRate={stats.flashRate}
+        onsightRate={stats.onsightRate}
+      />
 
       {/* Personal Records & Favorite Grades */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
