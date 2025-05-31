@@ -31,6 +31,7 @@ export function ProgressOverTimeChart({ data }: ProgressOverTimeChartProps) {
     const result = [];
 
     if (period === 'weekly') {
+      // Show last 7 days
       for (let i = 6; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
@@ -45,12 +46,17 @@ export function ProgressOverTimeChart({ data }: ProgressOverTimeChartProps) {
         });
       }
     } else if (period === 'monthly') {
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date(now);
-        date.setMonth(date.getMonth() - i);
-        const displayKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      // Show each day of the current month
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateKey = date.toISOString().split('T')[0];
+        const displayKey = day.toString();
         
-        const existingData = data.find(d => d.month === displayKey);
+        const existingData = data.find(d => d.month === dateKey);
         result.push({
           month: displayKey,
           climbs: existingData?.climbs || 0,
@@ -58,12 +64,15 @@ export function ProgressOverTimeChart({ data }: ProgressOverTimeChartProps) {
         });
       }
     } else if (period === 'yearly') {
-      for (let i = 59; i >= 0; i--) {
-        const date = new Date(now);
-        date.setMonth(date.getMonth() - i);
-        const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      // Show each month of the current year
+      const year = now.getFullYear();
+      
+      for (let month = 0; month < 12; month++) {
+        const date = new Date(year, month, 1);
+        const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
+        const yearMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
         
-        const existingData = data.find(d => d.month === monthKey);
+        const existingData = data.find(d => d.month.startsWith(yearMonth) || d.month === monthKey);
         result.push({
           month: monthKey,
           climbs: existingData?.climbs || 0,

@@ -50,14 +50,17 @@ export function MonthlyVolumeChart({ data }: MonthlyVolumeChartProps) {
         });
       }
     } else if (period === 'monthly') {
-      // Show last 12 months
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date(now);
-        date.setMonth(date.getMonth() - i);
-        const monthKey = date.toISOString().slice(0, 7);
-        const displayKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+      // Show each day of the current month
+      const year = now.getFullYear();
+      const month = now.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateKey = date.toISOString().split('T')[0];
+        const displayKey = day.toString();
         
-        const existingData = data.find(d => d.month === displayKey || d.month === monthKey);
+        const existingData = data.find(d => d.month === dateKey);
         result.push({
           month: displayKey,
           climbs: existingData?.climbs || 0,
@@ -65,13 +68,15 @@ export function MonthlyVolumeChart({ data }: MonthlyVolumeChartProps) {
         });
       }
     } else if (period === 'yearly') {
-      // Show last 5 years by month
-      for (let i = 59; i >= 0; i--) {
-        const date = new Date(now);
-        date.setMonth(date.getMonth() - i);
-        const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      // Show each month of the current year
+      const year = now.getFullYear();
+      
+      for (let month = 0; month < 12; month++) {
+        const date = new Date(year, month, 1);
+        const monthKey = date.toLocaleDateString('en-US', { month: 'short' });
+        const yearMonth = `${year}-${String(month + 1).padStart(2, '0')}`;
         
-        const existingData = data.find(d => d.month === monthKey);
+        const existingData = data.find(d => d.month.startsWith(yearMonth) || d.month === monthKey);
         result.push({
           month: monthKey,
           climbs: existingData?.climbs || 0,
