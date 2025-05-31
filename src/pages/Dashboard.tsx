@@ -68,10 +68,11 @@ export default function Dashboard() {
             {/* Main Content */}
             <div className="lg:col-span-2">
               <Tabs defaultValue="recent" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-4">
                   <TabsTrigger value="recent">Recent Climbs</TabsTrigger>
                   <TabsTrigger value="routes">Routes</TabsTrigger>
                   <TabsTrigger value="progress">Progress</TabsTrigger>
+                  <TabsTrigger value="goals">Goals</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="recent" className="mt-6">
@@ -107,9 +108,33 @@ export default function Dashboard() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-center py-8">
+                      <div className="text-center py-8 space-y-4">
                         <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500">Progress tracking coming soon!</p>
+                        <p className="text-gray-500">View your detailed progress analysis</p>
+                        <Button className="mt-4" onClick={() => window.location.href = '/progress'}>
+                          <TrendingUp className="h-4 w-4 mr-2" />
+                          View Full Progress Dashboard
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="goals" className="mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Target className="h-5 w-5 mr-2" />
+                        Goals & Challenges
+                      </CardTitle>
+                      <CardDescription>
+                        Set and track your climbing goals
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Goal tracking coming soon!</p>
                       </div>
                     </CardContent>
                   </Card>
