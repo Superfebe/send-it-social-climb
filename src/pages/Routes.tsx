@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Mountain, Star, Search, MapPin } from 'lucide-react';
 
-export default function Routes() {
+export default function RoutesPage() {
   const { user, signOut } = useAuth();
 
   return (
