@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,18 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, ChevronLeft, ChevronRight, Play, CheckCircle, Clock, Dumbbell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface TrainingSession {
-  id: string;
-  week_number: number;
-  day_number: number;
-  session_type: 'climbing' | 'strength' | 'mobility' | 'rest';
-  title: string;
-  description: string;
-  estimated_duration_minutes: number;
-  intensity_level: 'low' | 'medium' | 'high';
-  exercises: any[];
-}
+// Use the actual database type from Supabase
+type TrainingSession = Tables<'training_sessions'>;
 
 interface TodaysSession {
   session: TrainingSession | null;
@@ -100,7 +91,7 @@ export function TrainingCalendar() {
     return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][day - 1];
   };
 
-  const getIntensityColor = (intensity: string) => {
+  const getIntensityColor = (intensity: string | null) => {
     switch (intensity) {
       case 'high': return 'bg-red-500';
       case 'medium': return 'bg-orange-500';
