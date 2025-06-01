@@ -70,7 +70,7 @@ export default {
 					'4': 'hsl(var(--chart-4))',
 					'5': 'hsl(var(--chart-5))'
 				},
-				// Custom colors from the inspiration image
+				// Custom colors with warm gray instead of teal
 				orange: {
 					'50': '#fff7ed',
 					'100': '#ffedd5',
@@ -83,17 +83,17 @@ export default {
 					'800': '#9a3412',
 					'900': '#7c2d12',
 				},
-				teal: {
-					'50': '#f0fdfa',
-					'100': '#ccfbf1',
-					'200': '#99f6e4',
-					'300': '#5eead4',
-					'400': '#2dd4bf',
-					'500': '#14b8a6', // Secondary teal
-					'600': '#0d9488',
-					'700': '#0f766e',
-					'800': '#115e59',
-					'900': '#134e4a',
+				gray: {
+					'50': '#fafaf9',
+					'100': '#f5f5f4',
+					'200': '#e7e5e4',
+					'300': '#d6d3d1',
+					'400': '#a8a29e',
+					'500': '#78716c', // Secondary warm gray
+					'600': '#57534e',
+					'700': '#44403c',
+					'800': '#292524',
+					'900': '#1c1917',
 				}
 			},
 			borderRadius: {
@@ -128,7 +128,7 @@ export default {
 			},
 			backgroundImage: {
 				'gradient-orange': 'linear-gradient(135deg, #ff4500 0%, #ff6b35 100%)',
-				'gradient-teal': 'linear-gradient(135deg, #14b8a6 0%, #5eead4 100%)',
+				'gradient-gray': 'linear-gradient(135deg, #78716c 0%, #a8a29e 100%)',
 			}
 		}
 	},

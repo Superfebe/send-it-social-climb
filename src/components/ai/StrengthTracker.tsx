@@ -221,7 +221,7 @@ export function StrengthTracker() {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={logStrengthTest} disabled={!selectedExercise || !logForm.value} className="bg-teal-500 hover:bg-teal-600 text-white">
+            <Button onClick={logStrengthTest} disabled={!selectedExercise || !logForm.value} className="bg-gray-500 hover:bg-gray-600 text-white">
               Save Test
             </Button>
             <Button variant="outline" onClick={() => setIsLogging(false)} className="border-orange-200 text-orange-600 hover:bg-orange-50">

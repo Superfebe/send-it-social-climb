@@ -95,7 +95,7 @@ export function TrainingCalendar() {
     switch (intensity) {
       case 'high': return 'bg-red-500';
       case 'medium': return 'bg-orange-500';
-      case 'low': return 'bg-teal-500';
+      case 'low': return 'bg-gray-500';
       default: return 'bg-gray-400';
     }
   };
