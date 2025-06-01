@@ -62,6 +62,38 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				chart: {
+					'1': 'hsl(var(--chart-1))',
+					'2': 'hsl(var(--chart-2))',
+					'3': 'hsl(var(--chart-3))',
+					'4': 'hsl(var(--chart-4))',
+					'5': 'hsl(var(--chart-5))'
+				},
+				// Custom colors from the inspiration image
+				orange: {
+					'50': '#fff7ed',
+					'100': '#ffedd5',
+					'200': '#fed7aa',
+					'300': '#fdba74',
+					'400': '#fb923c',
+					'500': '#ff4500', // Primary orange
+					'600': '#ea580c',
+					'700': '#c2410c',
+					'800': '#9a3412',
+					'900': '#7c2d12',
+				},
+				teal: {
+					'50': '#f0fdfa',
+					'100': '#ccfbf1',
+					'200': '#99f6e4',
+					'300': '#5eead4',
+					'400': '#2dd4bf',
+					'500': '#14b8a6', // Secondary teal
+					'600': '#0d9488',
+					'700': '#0f766e',
+					'800': '#115e59',
+					'900': '#134e4a',
 				}
 			},
 			borderRadius: {
@@ -93,6 +125,10 @@ export default {
 			},
 			spacing: {
 				'safe-area-pb': 'env(safe-area-inset-bottom)'
+			},
+			backgroundImage: {
+				'gradient-orange': 'linear-gradient(135deg, #ff4500 0%, #ff6b35 100%)',
+				'gradient-teal': 'linear-gradient(135deg, #14b8a6 0%, #5eead4 100%)',
 			}
 		}
 	},
