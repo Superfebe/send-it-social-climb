@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import { TrendingUp, Plus, Target, Award } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { StrengthProgressChart } from '@/components/charts/StrengthProgressChart';
 
 interface StrengthStandard {
   exercise_name: string;
@@ -234,6 +234,8 @@ export function StrengthTracker() {
 
   return (
     <div className="space-y-6">
+      <StrengthProgressChart logs={logs} standards={standards} />
+      
       <Card className="bg-gray-900 border-gray-700">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
