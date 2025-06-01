@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -465,37 +466,37 @@ export function DetailedTrainingPlan() {
   // Session Detail View
   if (selectedSession) {
     return (
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-white border-orange-200 shadow-lg">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Button 
               variant="ghost" 
               size="sm" 
               onClick={() => setSelectedSession(null)}
-              className="text-gray-300 hover:text-white hover:bg-gray-800"
+              className="text-gray-600 hover:text-orange-600 hover:bg-orange-50"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
-              <CardTitle className="text-white">
+              <CardTitle className="text-gray-900">
                 {getDayName(selectedSession.day)} - {selectedSession.title}
               </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardDescription className="text-gray-600">
                 Week {selectedSession.week} • {selectedSession.description}
               </CardDescription>
             </div>
           </div>
           <div className="flex gap-2 mt-2">
-            <Badge variant="outline" className="border-gray-600 text-gray-300">
+            <Badge variant="outline" className="border-orange-200 text-orange-600">
               <Clock className="h-3 w-3 mr-1" />
               {selectedSession.duration}min
             </Badge>
             <Badge 
-              variant={selectedSession.intensity === 'high' ? 'destructive' : selectedSession.intensity === 'medium' ? 'default' : 'secondary'}
+              className={selectedSession.intensity === 'high' ? 'bg-red-500 text-white' : selectedSession.intensity === 'medium' ? 'bg-orange-500 text-white' : 'bg-teal-500 text-white'}
             >
               {selectedSession.intensity} intensity
             </Badge>
-            <Badge variant="outline" className="border-gray-600 text-gray-300 capitalize">
+            <Badge variant="outline" className="border-orange-200 text-orange-600 capitalize">
               {selectedSession.type}
             </Badge>
           </div>
@@ -503,32 +504,32 @@ export function DetailedTrainingPlan() {
         <CardContent className="space-y-6">
           {selectedSession.exercises.length > 0 ? (
             <div className="space-y-4">
-              <h4 className="font-semibold text-white flex items-center">
+              <h4 className="font-semibold text-gray-900 flex items-center">
                 <Dumbbell className="h-4 w-4 mr-2" />
                 Exercises ({selectedSession.exercises.length})
               </h4>
               {selectedSession.exercises.map((exercise, index) => (
-                <div key={index} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div key={index} className="bg-orange-50 rounded-lg p-4 border border-orange-100">
                   <div className="flex items-start justify-between mb-3">
-                    <h5 className="font-medium text-white text-lg">{exercise.name}</h5>
+                    <h5 className="font-medium text-gray-900 text-lg">{exercise.name}</h5>
                     <div className="flex gap-2 text-sm">
                       {exercise.sets && (
-                        <Badge variant="secondary" className="bg-blue-600 text-white">
+                        <Badge className="bg-blue-500 text-white">
                           {exercise.sets} sets
                         </Badge>
                       )}
                       {exercise.reps && (
-                        <Badge variant="secondary" className="bg-green-600 text-white">
+                        <Badge className="bg-teal-500 text-white">
                           {exercise.reps} reps
                         </Badge>
                       )}
                       {exercise.duration && (
-                        <Badge variant="secondary" className="bg-purple-600 text-white">
+                        <Badge className="bg-purple-500 text-white">
                           {exercise.duration}
                         </Badge>
                       )}
                       {exercise.rest && (
-                        <Badge variant="secondary" className="bg-orange-600 text-white">
+                        <Badge className="bg-orange-500 text-white">
                           Rest: {exercise.rest}
                         </Badge>
                       )}
@@ -537,15 +538,15 @@ export function DetailedTrainingPlan() {
                   
                   {exercise.instructions && (
                     <div className="mb-3">
-                      <h6 className="font-medium text-blue-300 mb-1">Instructions:</h6>
-                      <p className="text-gray-300 text-sm leading-relaxed">{exercise.instructions}</p>
+                      <h6 className="font-medium text-blue-600 mb-1">Instructions:</h6>
+                      <p className="text-gray-700 text-sm leading-relaxed">{exercise.instructions}</p>
                     </div>
                   )}
                   
                   {exercise.notes && (
                     <div>
-                      <h6 className="font-medium text-yellow-300 mb-1">Notes:</h6>
-                      <p className="text-gray-400 text-sm">{exercise.notes}</p>
+                      <h6 className="font-medium text-orange-600 mb-1">Notes:</h6>
+                      <p className="text-gray-600 text-sm">{exercise.notes}</p>
                     </div>
                   )}
                 </div>
@@ -553,7 +554,7 @@ export function DetailedTrainingPlan() {
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-400">Rest day - no exercises planned</p>
+              <p className="text-gray-600">Rest day - no exercises planned</p>
               <p className="text-gray-500 text-sm mt-1">Focus on recovery and light movement</p>
             </div>
           )}
@@ -564,27 +565,27 @@ export function DetailedTrainingPlan() {
 
   if (isCreating) {
     return (
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-white border-orange-200 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-white">Create Training Plan</CardTitle>
-          <CardDescription className="text-gray-300">Design a personalized training plan for your climbing goals</CardDescription>
+          <CardTitle className="text-gray-900">Create Training Plan</CardTitle>
+          <CardDescription className="text-gray-600">Design a personalized training plan for your climbing goals</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="targetGoal" className="text-gray-300">Training Goal</Label>
+              <Label htmlFor="targetGoal" className="text-gray-700">Training Goal</Label>
               <Input
                 id="targetGoal"
                 placeholder="e.g., Send V6 outdoors in 8 weeks"
                 value={planForm.targetGoal}
                 onChange={(e) => setPlanForm({...planForm, targetGoal: e.target.value})}
-                className="bg-gray-800 border-gray-600 text-white"
+                className="bg-white border-orange-200 text-gray-900 focus:border-orange-400 focus:ring-orange-400"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="gradeSystem" className="text-gray-300">Grade System</Label>
+              <Label htmlFor="gradeSystem" className="text-gray-700">Grade System</Label>
               <Select value={planForm.gradeSystem} onValueChange={(value) => setPlanForm({...planForm, gradeSystem: value, targetGrade: gradeSystemOptions[value as keyof typeof gradeSystemOptions][4]})}>
-                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="bg-white border-orange-200 text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -599,9 +600,9 @@ export function DetailedTrainingPlan() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="targetGrade" className="text-gray-300">Target Grade</Label>
+              <Label htmlFor="targetGrade" className="text-gray-700">Target Grade</Label>
               <Select value={planForm.targetGrade} onValueChange={(value) => setPlanForm({...planForm, targetGrade: value})}>
-                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="bg-white border-orange-200 text-gray-900">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -612,7 +613,7 @@ export function DetailedTrainingPlan() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="duration" className="text-gray-300">Duration (weeks)</Label>
+              <Label htmlFor="duration" className="text-gray-700">Duration (weeks)</Label>
               <Input
                 id="duration"
                 type="number"
@@ -620,15 +621,15 @@ export function DetailedTrainingPlan() {
                 max="16"
                 value={planForm.durationWeeks}
                 onChange={(e) => setPlanForm({...planForm, durationWeeks: parseInt(e.target.value)})}
-                className="bg-gray-800 border-gray-600 text-white"
+                className="bg-white border-orange-200 text-gray-900 focus:border-orange-400 focus:ring-orange-400"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="experience" className="text-gray-300">Experience Level</Label>
+            <Label htmlFor="experience" className="text-gray-700">Experience Level</Label>
             <Select value={planForm.experience} onValueChange={(value) => setPlanForm({...planForm, experience: value})}>
-              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+              <SelectTrigger className="bg-white border-orange-200 text-gray-900">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -640,10 +641,10 @@ export function DetailedTrainingPlan() {
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={generateDetailedPlan} disabled={generating || !planForm.targetGoal} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={generateDetailedPlan} disabled={generating || !planForm.targetGoal} className="bg-orange-500 hover:bg-orange-600 text-white">
               {generating ? 'Generating...' : 'Generate Plan'}
             </Button>
-            <Button variant="outline" onClick={() => setIsCreating(false)} className="border-gray-600 text-gray-300 hover:bg-gray-800">
+            <Button variant="outline" onClick={() => setIsCreating(false)} className="border-orange-200 text-orange-600 hover:bg-orange-50">
               Cancel
             </Button>
           </div>
@@ -654,42 +655,42 @@ export function DetailedTrainingPlan() {
 
   if (currentPlan) {
     return (
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-white border-orange-200 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between text-white">
+          <CardTitle className="flex items-center justify-between text-gray-900">
             <span>{currentPlan.title}</span>
             <div className="flex gap-2">
-              <Badge variant="outline" className="border-gray-600 text-gray-300">{currentPlan.durationWeeks} weeks</Badge>
-              <Badge variant="secondary" className="bg-gray-700 text-gray-200">{currentPlan.status}</Badge>
+              <Badge variant="outline" className="border-orange-200 text-orange-600">{currentPlan.durationWeeks} weeks</Badge>
+              <Badge className="bg-teal-500 text-white">{currentPlan.status}</Badge>
             </div>
           </CardTitle>
-          <CardDescription className="text-gray-300">{currentPlan.description}</CardDescription>
+          <CardDescription className="text-gray-600">{currentPlan.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-3 gap-4 p-4 bg-gray-800 rounded-lg">
+          <div className="grid grid-cols-3 gap-4 p-4 bg-orange-50 rounded-lg">
             <div>
-              <span className="text-sm text-gray-400">Target Goal:</span>
-              <p className="font-medium text-white">{currentPlan.targetGoal}</p>
+              <span className="text-sm text-gray-600">Target Goal:</span>
+              <p className="font-medium text-gray-900">{currentPlan.targetGoal}</p>
             </div>
             <div>
-              <span className="text-sm text-gray-400">Target Grade:</span>
-              <p className="font-medium text-white">{currentPlan.targetGrade} ({currentPlan.gradeSystem})</p>
+              <span className="text-sm text-gray-600">Target Grade:</span>
+              <p className="font-medium text-gray-900">{currentPlan.targetGrade} ({currentPlan.gradeSystem})</p>
             </div>
             <div>
-              <span className="text-sm text-gray-400">Duration:</span>
-              <p className="font-medium text-white">{currentPlan.durationWeeks} weeks</p>
+              <span className="text-sm text-gray-600">Duration:</span>
+              <p className="font-medium text-gray-900">{currentPlan.durationWeeks} weeks</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-semibold flex items-center text-white">
+            <h4 className="font-semibold flex items-center text-gray-900">
               <Calendar className="h-4 w-4 mr-2" />
               Weekly Schedule Preview
             </h4>
             
             {Array.from({length: Math.min(4, currentPlan.durationWeeks)}, (_, weekIndex) => (
-              <div key={weekIndex} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
-                <h5 className="font-medium mb-3 text-white">
+              <div key={weekIndex} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
+                <h5 className="font-medium mb-3 text-gray-900">
                   Week {weekIndex + 1} {(weekIndex + 1) % 4 === 0 ? '(Deload Week)' : ''}
                 </h5>
                 <div className="grid gap-2">
@@ -698,18 +699,17 @@ export function DetailedTrainingPlan() {
                     .map((session, sessionIndex) => (
                       <div 
                         key={sessionIndex} 
-                        className="flex items-center justify-between p-3 bg-gray-700 rounded text-sm cursor-pointer hover:bg-gray-600 transition-colors"
+                        className="flex items-center justify-between p-3 bg-white rounded text-sm cursor-pointer hover:bg-orange-50 transition-colors border border-orange-100"
                         onClick={() => setSelectedSession(session)}
                       >
-                        <span className="font-medium text-white">
+                        <span className="font-medium text-gray-900">
                           {getDayName(session.day)}
                         </span>
-                        <span className="text-gray-300">{session.title}</span>
+                        <span className="text-gray-700">{session.title}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-gray-400">{session.duration}min</span>
+                          <span className="text-gray-600">{session.duration}min</span>
                           <Badge 
-                            variant={session.intensity === 'high' ? 'destructive' : session.intensity === 'medium' ? 'default' : 'secondary'}
-                            className="text-xs"
+                            className={session.intensity === 'high' ? 'bg-red-500 text-white' : session.intensity === 'medium' ? 'bg-orange-500 text-white' : 'bg-teal-500 text-white'}
                           >
                             {session.intensity}
                           </Badge>
@@ -723,7 +723,7 @@ export function DetailedTrainingPlan() {
             
             {currentPlan.durationWeeks > 4 && (
               <div className="text-center py-4">
-                <p className="text-gray-400 text-sm">
+                <p className="text-gray-600 text-sm">
                   Showing first 4 weeks. Click on any day to see detailed exercises.
                 </p>
                 <p className="text-gray-500 text-xs mt-1">
@@ -735,12 +735,12 @@ export function DetailedTrainingPlan() {
 
           <div className="flex gap-2">
             {!currentPlan.id && (
-              <Button onClick={() => savePlan(currentPlan)} className="flex items-center bg-green-600 hover:bg-green-700">
+              <Button onClick={() => savePlan(currentPlan)} className="flex items-center bg-teal-500 hover:bg-teal-600 text-white">
                 <Save className="h-4 w-4 mr-2" />
                 Save Plan
               </Button>
             )}
-            <Button variant="outline" onClick={() => setCurrentPlan(null)} className="border-gray-600 text-gray-300 hover:bg-gray-800">
+            <Button variant="outline" onClick={() => setCurrentPlan(null)} className="border-orange-200 text-orange-600 hover:bg-orange-50">
               Back to Plans
             </Button>
           </div>
@@ -750,35 +750,35 @@ export function DetailedTrainingPlan() {
   }
 
   return (
-    <Card className="bg-gray-900 border-gray-700">
+    <Card className="bg-white border-orange-200 shadow-lg">
       <CardHeader>
-        <CardTitle className="text-white">Training Plans</CardTitle>
-        <CardDescription className="text-gray-300">Create and manage detailed climbing training plans</CardDescription>
+        <CardTitle className="text-gray-900">Training Plans</CardTitle>
+        <CardDescription className="text-gray-600">Create and manage detailed climbing training plans</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {savedPlans.length > 0 ? (
           <div className="space-y-3">
-            <h4 className="font-medium text-white">Your Plans</h4>
+            <h4 className="font-medium text-gray-900">Your Plans</h4>
             {savedPlans.map((plan) => (
-              <div key={plan.id} className="flex items-center justify-between p-3 border border-gray-700 rounded-lg bg-gray-800">
+              <div key={plan.id} className="flex items-center justify-between p-3 border border-orange-200 rounded-lg bg-orange-50">
                 <div>
-                  <h5 className="font-medium text-white">{plan.title}</h5>
-                  <p className="text-sm text-gray-400">{plan.description}</p>
+                  <h5 className="font-medium text-gray-900">{plan.title}</h5>
+                  <p className="text-sm text-gray-600">{plan.description}</p>
                   <div className="flex gap-2 mt-1">
-                    <Badge variant="outline" className="border-gray-600 text-gray-300">{plan.targetGrade}</Badge>
-                    <Badge variant="secondary" className="bg-gray-700 text-gray-200">{plan.status}</Badge>
-                    <Badge variant="outline" className="border-gray-600 text-gray-300">{plan.durationWeeks} weeks</Badge>
+                    <Badge variant="outline" className="border-orange-200 text-orange-600">{plan.targetGrade}</Badge>
+                    <Badge className="bg-teal-500 text-white">{plan.status}</Badge>
+                    <Badge variant="outline" className="border-orange-200 text-orange-600">{plan.durationWeeks} weeks</Badge>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => loadPlan(plan)} className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                  <Button variant="outline" onClick={() => loadPlan(plan)} className="border-orange-200 text-orange-600 hover:bg-orange-50">
                     View Plan
                   </Button>
                   <Button 
                     variant="outline" 
                     size="sm"
                     onClick={() => deletePlan(plan.id!)}
-                    className="border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                    className="border-red-200 text-red-500 hover:bg-red-50"
                   >
                     <Trash className="h-4 w-4" />
                   </Button>
@@ -788,11 +788,11 @@ export function DetailedTrainingPlan() {
           </div>
         ) : (
           <div className="text-center py-6">
-            <p className="text-gray-400 mb-4">No training plans yet. Create your first one!</p>
+            <p className="text-gray-600 mb-4">No training plans yet. Create your first one!</p>
           </div>
         )}
         
-        <Button onClick={() => setIsCreating(true)} className="w-full bg-blue-600 hover:bg-blue-700">
+        <Button onClick={() => setIsCreating(true)} className="w-full bg-orange-500 hover:bg-orange-600 text-white">
           <Target className="h-4 w-4 mr-2" />
           Create New Training Plan
         </Button>

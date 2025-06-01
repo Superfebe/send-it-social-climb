@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -169,16 +170,16 @@ export function StrengthTracker() {
 
   if (isLogging) {
     return (
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-white border-orange-200 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-white">Log Strength Test</CardTitle>
-          <CardDescription className="text-gray-300">Record your latest strength test results</CardDescription>
+          <CardTitle className="text-gray-900">Log Strength Test</CardTitle>
+          <CardDescription className="text-gray-600">Record your latest strength test results</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="exercise" className="text-gray-300">Exercise</Label>
+            <Label htmlFor="exercise" className="text-gray-700">Exercise</Label>
             <Select value={selectedExercise} onValueChange={setSelectedExercise}>
-              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+              <SelectTrigger className="bg-white border-orange-200 text-gray-900">
                 <SelectValue placeholder="Select an exercise" />
               </SelectTrigger>
               <SelectContent>
@@ -193,7 +194,7 @@ export function StrengthTracker() {
 
           {selectedExercise && (
             <div className="space-y-2">
-              <Label htmlFor="value" className="text-gray-300">
+              <Label htmlFor="value" className="text-gray-700">
                 Value ({standards.find(s => s.exercise_name === selectedExercise)?.measurement_unit})
               </Label>
               <Input
@@ -203,27 +204,27 @@ export function StrengthTracker() {
                 value={logForm.value}
                 onChange={(e) => setLogForm({...logForm, value: e.target.value})}
                 placeholder="Enter your result"
-                className="bg-gray-800 border-gray-600 text-white"
+                className="bg-white border-orange-200 text-gray-900 focus:border-orange-400 focus:ring-orange-400"
               />
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="notes" className="text-gray-300">Notes (optional)</Label>
+            <Label htmlFor="notes" className="text-gray-700">Notes (optional)</Label>
             <Textarea
               id="notes"
               value={logForm.notes}
               onChange={(e) => setLogForm({...logForm, notes: e.target.value})}
               placeholder="Any observations about the test..."
-              className="bg-gray-800 border-gray-600 text-white"
+              className="bg-white border-orange-200 text-gray-900 focus:border-orange-400 focus:ring-orange-400"
             />
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={logStrengthTest} disabled={!selectedExercise || !logForm.value} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={logStrengthTest} disabled={!selectedExercise || !logForm.value} className="bg-teal-500 hover:bg-teal-600 text-white">
               Save Test
             </Button>
-            <Button variant="outline" onClick={() => setIsLogging(false)} className="border-gray-600 text-gray-300 hover:bg-gray-800">
+            <Button variant="outline" onClick={() => setIsLogging(false)} className="border-orange-200 text-orange-600 hover:bg-orange-50">
               Cancel
             </Button>
           </div>
@@ -236,19 +237,19 @@ export function StrengthTracker() {
     <div className="space-y-6">
       <StrengthProgressChart logs={logs} standards={standards} />
       
-      <Card className="bg-gray-900 border-gray-700">
+      <Card className="bg-white border-orange-200 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center text-white">
+            <span className="flex items-center text-gray-900">
               <TrendingUp className="h-5 w-5 mr-2" />
               Strength Tracking
             </span>
-            <Button onClick={() => setIsLogging(true)} className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => setIsLogging(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
               <Plus className="h-4 w-4 mr-2" />
               Log Test
             </Button>
           </CardTitle>
-          <CardDescription className="text-gray-300">
+          <CardDescription className="text-gray-600">
             Track your climbing-specific strength metrics and compare to standards
           </CardDescription>
         </CardHeader>
@@ -261,17 +262,17 @@ export function StrengthTracker() {
               const history = getExerciseHistory(standard.exercise_name);
 
               return (
-                <div key={standard.exercise_name} className="border border-gray-700 rounded-lg p-4 bg-gray-800">
+                <div key={standard.exercise_name} className="border border-orange-200 rounded-lg p-4 bg-orange-50">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h4 className="font-medium text-white">{standard.description}</h4>
-                      <p className="text-sm text-gray-400">
+                      <h4 className="font-medium text-gray-900">{standard.description}</h4>
+                      <p className="text-sm text-gray-600">
                         Current: {latestLog ? `${latestLog.value} ${standard.measurement_unit}` : 'Not tested'}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       {level !== 'not tested' && (
-                        <Badge variant="secondary" className={`${getLevelColor(level)} text-white`}>
+                        <Badge className={`${getLevelColor(level)} text-white`}>
                           {level.charAt(0).toUpperCase() + level.slice(1)}
                         </Badge>
                       )}
@@ -281,11 +282,11 @@ export function StrengthTracker() {
                   {latestLog && (
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-300">Progress to Elite</span>
-                        <span className="text-gray-300">{progress.toFixed(0)}%</span>
+                        <span className="text-gray-700">Progress to Elite</span>
+                        <span className="text-gray-700">{progress.toFixed(0)}%</span>
                       </div>
                       <Progress value={progress} className="h-2" />
-                      <div className="grid grid-cols-4 gap-2 text-xs text-gray-400">
+                      <div className="grid grid-cols-4 gap-2 text-xs text-gray-600">
                         <div>Beginner: {standard.benchmarks.beginner}{standard.measurement_unit}</div>
                         <div>Intermediate: {standard.benchmarks.intermediate}{standard.measurement_unit}</div>
                         <div>Advanced: {standard.benchmarks.advanced}{standard.measurement_unit}</div>
@@ -296,7 +297,7 @@ export function StrengthTracker() {
 
                   {history.length > 1 && (
                     <div className="mt-4">
-                      <h5 className="text-sm font-medium mb-2 text-gray-300">Progress Chart</h5>
+                      <h5 className="text-sm font-medium mb-2 text-gray-700">Progress Chart</h5>
                       <div className="h-24">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={history}>
@@ -304,7 +305,7 @@ export function StrengthTracker() {
                             <XAxis dataKey="date" fontSize={10} />
                             <YAxis fontSize={10} />
                             <Tooltip />
-                            <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} />
+                            <Line type="monotone" dataKey="value" stroke="#FF4500" strokeWidth={2} />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
