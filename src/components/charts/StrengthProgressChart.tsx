@@ -33,8 +33,9 @@ interface StrengthProgressChartProps {
 }
 
 const colors = [
-  '#8884d8', '#82ca9d', '#ffc658', '#ff7c7c', '#8dd1e1', 
-  '#d084d0', '#ffb347', '#87d068', '#ff9999', '#87ceeb'
+  'hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 
+  'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--accent))',
+  '#ff7c7c', '#8dd1e1', '#d084d0', '#ffb347'
 ];
 
 export function StrengthProgressChart({ logs, standards }: StrengthProgressChartProps) {
@@ -122,20 +123,20 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
 
   if (logs.length === 0) {
     return (
-      <Card className="bg-gray-900 border-gray-700">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center text-white">
-            <TrendingUp className="h-5 w-5 mr-2" />
+          <CardTitle className="flex items-center">
+            <TrendingUp className="h-5 w-5 mr-2 text-primary" />
             Strength Progress
           </CardTitle>
-          <CardDescription className="text-gray-300">
+          <CardDescription>
             Track your strength development over time
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <p className="text-gray-400">No strength test data available yet</p>
-            <p className="text-sm text-gray-500 mt-2">Log some strength tests to see your progress</p>
+            <p className="text-muted-foreground">No strength test data available yet</p>
+            <p className="text-sm text-muted-foreground mt-2">Log some strength tests to see your progress</p>
           </div>
         </CardContent>
       </Card>
@@ -143,11 +144,11 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
   }
 
   return (
-    <Card className="bg-gray-900 border-gray-700">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between text-white">
+        <CardTitle className="flex items-center justify-between">
           <span className="flex items-center">
-            <TrendingUp className="h-5 w-5 mr-2" />
+            <TrendingUp className="h-5 w-5 mr-2 text-primary" />
             Strength Progress
           </span>
           <div className="flex gap-2">
@@ -169,7 +170,7 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
             </Button>
           </div>
         </CardTitle>
-        <CardDescription className="text-gray-300">
+        <CardDescription>
           {viewMode === 'individual' 
             ? 'View progress for individual exercises' 
             : 'Compare multiple exercises to identify weak points (normalized as % of elite standard)'
@@ -180,9 +181,9 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
         {viewMode === 'individual' ? (
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Select Exercise</label>
+              <label className="text-sm font-medium">Select Exercise</label>
               <Select value={selectedExercise} onValueChange={setSelectedExercise}>
-                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger>
                   <SelectValue placeholder="Choose an exercise" />
                 </SelectTrigger>
                 <SelectContent>
@@ -226,7 +227,7 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Select Exercises to Compare</label>
+              <label className="text-sm font-medium">Select Exercises to Compare</label>
               <div className="flex flex-wrap gap-2">
                 {availableExercises.map((exercise) => {
                   const standard = standards.find(s => s.exercise_name === exercise);
@@ -239,8 +240,8 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
                       onClick={() => toggleExerciseVisibility(exercise)}
                       className={`text-xs ${
                         isVisible 
-                          ? 'bg-blue-600 border-blue-500 text-white' 
-                          : 'border-gray-600 text-gray-300 hover:bg-gray-800'
+                          ? 'bg-primary text-primary-foreground border-primary' 
+                          : 'border-border hover:bg-accent'
                       }`}
                     >
                       {isVisible ? <Eye className="h-3 w-3 mr-1" /> : <EyeOff className="h-3 w-3 mr-1" />}
@@ -253,7 +254,7 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
 
             {visibleExercises.size > 0 && (
               <div className="space-y-4">
-                <div className="text-xs text-gray-400">
+                <div className="text-xs text-muted-foreground">
                   Note: Values are normalized as percentage of elite standard for comparison
                 </div>
                 <div className="h-64">
@@ -294,9 +295,9 @@ export function StrengthProgressChart({ logs, standards }: StrengthProgressChart
                 </div>
                 
                 {visibleExercises.size > 1 && (
-                  <div className="mt-4 p-3 bg-gray-800 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-300 mb-2">Weak Point Analysis</h4>
-                    <div className="text-xs text-gray-400">
+                  <div className="mt-4 p-3 bg-muted rounded-lg">
+                    <h4 className="text-sm font-medium mb-2">Weak Point Analysis</h4>
+                    <div className="text-xs text-muted-foreground">
                       Compare the lines to identify exercises where you're furthest from the elite standard. 
                       Lower percentages indicate areas that need more focus in your training.
                     </div>

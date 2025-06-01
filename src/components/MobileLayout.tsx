@@ -18,7 +18,7 @@ export function MobileLayout({ children, title, showHeader = true }: MobileLayou
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {showHeader && <MobileHeader title={title} />}
       
       <main className="flex-1 pb-20 overflow-y-auto">

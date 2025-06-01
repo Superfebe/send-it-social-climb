@@ -87,7 +87,7 @@ export function ClimbingStats() {
         </CardHeader>
         <CardContent>
           <div className="text-center py-4">
-            <p className="text-gray-500">Loading stats...</p>
+            <p className="text-muted-foreground">Loading stats...</p>
           </div>
         </CardContent>
       </Card>
@@ -98,7 +98,7 @@ export function ClimbingStats() {
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center">
-          <TrendingUp className="h-5 w-5 mr-2" />
+          <TrendingUp className="h-5 w-5 mr-2 text-primary" />
           Your Stats
         </CardTitle>
       </CardHeader>
@@ -106,36 +106,36 @@ export function ClimbingStats() {
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <Mountain className="h-4 w-4 text-blue-600 mr-1" />
+              <Mountain className="h-4 w-4 text-primary mr-1" />
             </div>
-            <div className="text-2xl font-bold text-blue-600">{stats.totalClimbs}</div>
-            <div className="text-xs text-gray-500">Total Climbs</div>
+            <div className="text-2xl font-bold text-primary">{stats.totalClimbs}</div>
+            <div className="text-xs text-muted-foreground">Total Climbs</div>
           </div>
           
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <Star className="h-4 w-4 text-green-600 mr-1" />
+              <Star className="h-4 w-4 text-teal-500 mr-1" />
             </div>
-            <div className="text-2xl font-bold text-green-600">{stats.uniqueRoutes}</div>
-            <div className="text-xs text-gray-500">Unique Routes</div>
+            <div className="text-2xl font-bold text-teal-600">{stats.uniqueRoutes}</div>
+            <div className="text-xs text-muted-foreground">Unique Routes</div>
           </div>
           
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <Calendar className="h-4 w-4 text-purple-600 mr-1" />
+              <Calendar className="h-4 w-4 text-accent mr-1" />
             </div>
-            <div className="text-2xl font-bold text-purple-600">{stats.thisMonthClimbs}</div>
-            <div className="text-xs text-gray-500">This Month</div>
+            <div className="text-2xl font-bold text-accent">{stats.thisMonthClimbs}</div>
+            <div className="text-xs text-muted-foreground">This Month</div>
           </div>
           
           <div className="text-center">
             <div className="flex items-center justify-center mb-1">
-              <span className="text-yellow-500">★</span>
+              <span className="text-orange-400">★</span>
             </div>
-            <div className="text-2xl font-bold text-yellow-600">
+            <div className="text-2xl font-bold text-orange-500">
               {stats.averageRating > 0 ? stats.averageRating : '-'}
             </div>
-            <div className="text-xs text-gray-500">Avg Rating</div>
+            <div className="text-xs text-muted-foreground">Avg Rating</div>
           </div>
         </div>
       </CardContent>
