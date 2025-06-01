@@ -418,6 +418,10 @@ export function DetailedTrainingPlan() {
       toast.success('Training plan saved successfully!');
       loadSavedPlans();
       
+      // Return to the plans list after saving
+      setCurrentPlan(null);
+      setIsCreating(false);
+      
     } catch (error) {
       console.error('Error saving plan:', error);
       toast.error('Failed to save training plan');
