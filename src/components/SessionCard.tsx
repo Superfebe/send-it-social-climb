@@ -52,7 +52,7 @@ export function SessionCard({ session }: SessionCardProps) {
   }
 
   return (
-    <Card className="hover:bg-gray-50 transition-colors cursor-pointer group" onClick={() => setShowDetails(true)}>
+    <Card className="hover:bg-gray-50 transition-colors cursor-pointer group border-2 border-gray-200 hover:border-gray-300 shadow-sm" onClick={() => setShowDetails(true)}>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div>
