@@ -51,7 +51,7 @@ const startApp = () => {
   // Add a small delay to ensure Capacitor is fully loaded
   setTimeout(() => {
     try {
-      console.log('Capacitor object available:', !!window.Capacitor);
+      console.log('Capacitor object available:', typeof Capacitor !== 'undefined');
       console.log('Running in native Capacitor environment:', Capacitor.isNativePlatform());
       initializeApp();
     } catch (error) {
