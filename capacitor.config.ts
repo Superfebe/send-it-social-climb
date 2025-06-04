@@ -5,11 +5,6 @@ const config: CapacitorConfig = {
   appId: 'com.senditsocialclimb.app',
   appName: 'send-it-social-climb',
   webDir: 'dist',
-  server: {
-    // Comment out the URL for production builds
-    // url: "https://48a5a346-1aa4-41d0-a799-bd8df13cb5cb.lovableproject.com?forceHideBadge=true",
-    cleartext: true
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
