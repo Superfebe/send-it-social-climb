@@ -5,6 +5,9 @@ import { Capacitor } from '@capacitor/core';
 import App from './App.tsx';
 import './index.css';
 
+// Import type declarations
+import './types/capacitor.d.ts';
+
 // Polyfill for triggerEvent method that may be called before Capacitor is fully ready
 if (typeof window !== 'undefined') {
   if (!window.Capacitor) {
