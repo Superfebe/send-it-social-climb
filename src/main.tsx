@@ -18,18 +18,50 @@ const initializeApp = () => {
   console.log('Capacitor platform:', Capacitor.getPlatform());
   console.log('Capacitor is native app:', Capacitor.isNativePlatform());
   
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  );
+  // Ensure the root element exists
+  const rootElement = document.getElementById('root');
+  if (!rootElement) {
+    console.error('Root element not found');
+    return;
+  }
+
+  // Add a small delay to ensure React is fully loaded
+  setTimeout(() => {
+    try {
+      createRoot(rootElement).render(
+        <StrictMode>
+          <App />
+        </StrictMode>,
+      );
+    } catch (error) {
+      console.error('Error initializing React app:', error);
+    }
+  }, 100);
 };
 
-// Check if we're in a Capacitor environment
-if (Capacitor.isNativePlatform()) {
-  // Wait for device ready event
-  document.addEventListener('deviceready', initializeApp, false);
+// Enhanced initialization logic
+const startApp = () => {
+  // Check if we're in a Capacitor environment
+  if (Capacitor.isNativePlatform()) {
+    console.log('Running in native Capacitor environment');
+    // Wait for device ready event
+    document.addEventListener('deviceready', initializeApp, false);
+    
+    // Fallback timeout in case deviceready doesn't fire
+    setTimeout(() => {
+      console.log('Fallback: deviceready timeout, initializing anyway');
+      initializeApp();
+    }, 5000);
+  } else {
+    console.log('Running in web browser');
+    // For web, initialize immediately
+    initializeApp();
+  }
+};
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', startApp);
 } else {
-  // For web, initialize immediately
-  initializeApp();
+  startApp();
 }
