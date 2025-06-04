@@ -17,6 +17,8 @@ import NotFound from '@/pages/NotFound';
 const queryClient = new QueryClient();
 
 function App() {
+  console.log('App component mounting');
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -31,8 +33,11 @@ function App() {
 
 function AppContent() {
   const { user, loading } = useAuth();
+  
+  console.log('AppContent rendering:', { user: !!user, loading });
 
   if (loading) {
+    console.log('App is in loading state');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -42,6 +47,8 @@ function AppContent() {
       </div>
     );
   }
+
+  console.log('App finished loading, user:', !!user);
 
   return (
     <Routes>

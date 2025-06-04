@@ -3,8 +3,15 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mountain, TrendingUp, Users, Star } from 'lucide-react';
+import { useEffect } from 'react';
 
 const Index = () => {
+  useEffect(() => {
+    console.log('Index page mounted');
+    console.log('Current URL:', window.location.href);
+    console.log('User agent:', navigator.userAgent);
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
