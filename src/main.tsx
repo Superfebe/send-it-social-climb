@@ -1,25 +1,40 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Capacitor } from '@capacitor/core';
 import App from './App.tsx';
 import './index.css';
 
 // Import type declarations
 import './types/capacitor.d.ts';
 
-// Polyfill for triggerEvent method that may be called before Capacitor is fully ready
-if (typeof window !== 'undefined') {
-  if (!window.Capacitor) {
-    window.Capacitor = {} as any;
+// Set up comprehensive Capacitor polyfill IMMEDIATELY
+(function() {
+  if (typeof window !== 'undefined') {
+    // Ensure Capacitor object exists with all necessary methods
+    if (!window.Capacitor) {
+      window.Capacitor = {
+        triggerEvent: function(eventName: string, target: string) {
+          console.log('Polyfilled triggerEvent called:', eventName, target);
+          // Do nothing - this prevents the error
+        },
+        platform: 'web',
+        isNative: false,
+        getPlatform: function() { return 'web'; },
+        isNativePlatform: function() { return false; }
+      };
+    } else {
+      // If Capacitor exists but triggerEvent doesn't, add it
+      if (!window.Capacitor.triggerEvent) {
+        window.Capacitor.triggerEvent = function(eventName: string, target: string) {
+          console.log('Polyfilled triggerEvent called:', eventName, target);
+        };
+      }
+    }
   }
-  if (!window.Capacitor.triggerEvent) {
-    window.Capacitor.triggerEvent = function(eventName: string, target: string) {
-      console.log('Polyfilled triggerEvent called:', eventName, target);
-      // Do nothing - this is just to prevent the error
-    };
-  }
-}
+})();
+
+// Import Capacitor after polyfill is in place
+import { Capacitor } from '@capacitor/core';
 
 // Add mobile viewport meta tag if not present
 if (!document.querySelector('meta[name="viewport"]')) {
