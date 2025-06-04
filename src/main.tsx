@@ -33,6 +33,7 @@ const initializeApp = () => {
           <App />
         </StrictMode>,
       );
+      console.log('React app initialized successfully');
     } catch (error) {
       console.error('Error initializing React app:', error);
     }
@@ -44,14 +45,8 @@ const startApp = () => {
   // Check if we're in a Capacitor environment
   if (Capacitor.isNativePlatform()) {
     console.log('Running in native Capacitor environment');
-    // Wait for device ready event
-    document.addEventListener('deviceready', initializeApp, false);
-    
-    // Fallback timeout in case deviceready doesn't fire
-    setTimeout(() => {
-      console.log('Fallback: deviceready timeout, initializing anyway');
-      initializeApp();
-    }, 5000);
+    // For native apps, initialize immediately as Capacitor is already ready
+    initializeApp();
   } else {
     console.log('Running in web browser');
     // For web, initialize immediately
