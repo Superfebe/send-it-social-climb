@@ -13,7 +13,16 @@ if (!document.querySelector('meta[name="viewport"]')) {
   document.getElementsByTagName('head')[0].appendChild(meta);
 }
 
-// Initialize app after Capacitor is ready
+// Add error handler for Capacitor-related errors
+window.addEventListener('error', (event) => {
+  if (event.message.includes('triggerEvent') || event.message.includes('Capacitor')) {
+    console.warn('Capacitor-related error caught and suppressed:', event.message);
+    event.preventDefault();
+    return false;
+  }
+});
+
+// Initialize app after ensuring Capacitor is ready
 const initializeApp = () => {
   console.log('Capacitor platform:', Capacitor.getPlatform());
   console.log('Capacitor is native app:', Capacitor.isNativePlatform());
@@ -25,33 +34,32 @@ const initializeApp = () => {
     return;
   }
 
-  // Add a small delay to ensure React is fully loaded
-  setTimeout(() => {
-    try {
-      createRoot(rootElement).render(
-        <StrictMode>
-          <App />
-        </StrictMode>,
-      );
-      console.log('React app initialized successfully');
-    } catch (error) {
-      console.error('Error initializing React app:', error);
-    }
-  }, 100);
+  try {
+    createRoot(rootElement).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    );
+    console.log('React app initialized successfully');
+  } catch (error) {
+    console.error('Error initializing React app:', error);
+  }
 };
 
-// Enhanced initialization logic
+// Enhanced initialization logic with Capacitor readiness check
 const startApp = () => {
-  // Check if we're in a Capacitor environment
-  if (Capacitor.isNativePlatform()) {
-    console.log('Running in native Capacitor environment');
-    // For native apps, initialize immediately as Capacitor is already ready
-    initializeApp();
-  } else {
-    console.log('Running in web browser');
-    // For web, initialize immediately
-    initializeApp();
-  }
+  // Add a small delay to ensure Capacitor is fully loaded
+  setTimeout(() => {
+    try {
+      console.log('Capacitor object available:', !!window.Capacitor);
+      console.log('Running in native Capacitor environment:', Capacitor.isNativePlatform());
+      initializeApp();
+    } catch (error) {
+      console.error('Error during Capacitor check:', error);
+      // Fallback to initialize anyway
+      initializeApp();
+    }
+  }, 200);
 };
 
 // Wait for DOM to be ready
