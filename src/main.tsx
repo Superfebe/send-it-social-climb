@@ -5,6 +5,19 @@ import { Capacitor } from '@capacitor/core';
 import App from './App.tsx';
 import './index.css';
 
+// Polyfill for triggerEvent method that may be called before Capacitor is fully ready
+if (typeof window !== 'undefined') {
+  if (!window.Capacitor) {
+    window.Capacitor = {} as any;
+  }
+  if (!window.Capacitor.triggerEvent) {
+    window.Capacitor.triggerEvent = function(eventName: string, target: string) {
+      console.log('Polyfilled triggerEvent called:', eventName, target);
+      // Do nothing - this is just to prevent the error
+    };
+  }
+}
+
 // Add mobile viewport meta tag if not present
 if (!document.querySelector('meta[name="viewport"]')) {
   const meta = document.createElement('meta');
