@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -331,7 +332,7 @@ export function SessionDetails({ session, onBack, onRefresh }: SessionDetailsPro
                   <TableHead>Grade</TableHead>
                   <TableHead>Style</TableHead>
                   <TableHead>Attempts</TableHead>
-                  <TableHead width="50"></TableHead>
+                  <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
