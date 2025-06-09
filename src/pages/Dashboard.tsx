@@ -40,6 +40,10 @@ export default function Dashboard() {
     checkActiveSession();
   };
 
+  const handleDataChange = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   const checkActiveSession = async () => {
     if (!user) return;
 

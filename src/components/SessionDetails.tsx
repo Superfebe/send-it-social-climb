@@ -1,11 +1,12 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Calendar, Clock, Mountain, Trophy, TrendingUp, Target } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Mountain, Trophy, TrendingUp, Target, MoreVertical, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
+import { DeleteSessionDialog, DeleteClimbDialog } from '@/components/DeleteActions';
 
 interface Session {
   id: string;
@@ -33,6 +34,7 @@ interface Ascent {
 interface SessionDetailsProps {
   session: Session;
   onBack: () => void;
+  onRefresh?: () => void;
 }
 
 interface SessionStats {
@@ -47,7 +49,7 @@ interface SessionStats {
   gradeDistribution: { [key: string]: number };
 }
 
-export function SessionDetails({ session, onBack }: SessionDetailsProps) {
+export function SessionDetails({ session, onBack, onRefresh }: SessionDetailsProps) {
   const [ascents, setAscents] = useState<Ascent[]>([]);
   const [stats, setStats] = useState<SessionStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,6 +84,16 @@ export function SessionDetails({ session, onBack }: SessionDetailsProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClimbDeleted = () => {
+    fetchSessionData();
+    if (onRefresh) onRefresh();
+  };
+
+  const handleSessionDeleted = () => {
+    if (onRefresh) onRefresh();
+    onBack();
   };
 
   const calculateStats = (ascentData: Ascent[]) => {
@@ -194,27 +206,44 @@ export function SessionDetails({ session, onBack }: SessionDetailsProps) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Mountain className="h-5 w-5" />
-                Session at {session.areas?.name || 'Unknown Area'}
-              </CardTitle>
-              <CardDescription className="flex items-center gap-2 mt-1">
-                <Calendar className="h-4 w-4" />
-                {formatDate(session.start_time)}
-                <span className="mx-2">•</span>
-                <Clock className="h-4 w-4" />
-                {formatDuration(session.duration_minutes)}
-                <span className="mx-2">•</span>
-                <Badge variant="outline" className="capitalize">
-                  {session.climb_type}
-                </Badge>
-              </CardDescription>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="sm" onClick={onBack}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Mountain className="h-5 w-5" />
+                  Session at {session.areas?.name || 'Unknown Area'}
+                </CardTitle>
+                <CardDescription className="flex items-center gap-2 mt-1">
+                  <Calendar className="h-4 w-4" />
+                  {formatDate(session.start_time)}
+                  <span className="mx-2">•</span>
+                  <Clock className="h-4 w-4" />
+                  {formatDuration(session.duration_minutes)}
+                  <span className="mx-2">•</span>
+                  <Badge variant="outline" className="capitalize">
+                    {session.climb_type}
+                  </Badge>
+                </CardDescription>
+              </div>
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DeleteSessionDialog sessionId={session.id} onSuccess={handleSessionDeleted}>
+                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Session
+                  </DropdownMenuItem>
+                </DeleteSessionDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           {session.notes && (
             <p className="text-sm text-gray-600 italic mt-3">"{session.notes}"</p>
@@ -302,6 +331,7 @@ export function SessionDetails({ session, onBack }: SessionDetailsProps) {
                   <TableHead>Grade</TableHead>
                   <TableHead>Style</TableHead>
                   <TableHead>Attempts</TableHead>
+                  <TableHead width="50"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -332,6 +362,27 @@ export function SessionDetails({ session, onBack }: SessionDetailsProps) {
                       <Badge variant={ascent.attempts === 1 ? "default" : "outline"}>
                         {ascent.attempts}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DeleteClimbDialog 
+                            climbId={ascent.id} 
+                            climbName={ascent.routes.name}
+                            onSuccess={handleClimbDeleted}
+                          >
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Climb
+                            </DropdownMenuItem>
+                          </DeleteClimbDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

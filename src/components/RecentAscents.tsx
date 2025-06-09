@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Mountain, Trophy, Target } from 'lucide-react';
+import { Calendar, Mountain, Trophy, Target, MoreVertical, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SessionCard } from './SessionCard';
+import { SessionDetails } from './SessionDetails';
+import { DeleteClimbDialog, DeleteSessionDialog } from './DeleteActions';
 
 interface Ascent {
   id: string;
@@ -41,6 +45,7 @@ export function RecentAscents() {
   const [ascents, setAscents] = useState<Ascent[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -106,6 +111,18 @@ export function RecentAscents() {
     }
   };
 
+  const handleSessionClick = (session: Session) => {
+    setSelectedSession(session);
+  };
+
+  const handleBackFromDetails = () => {
+    setSelectedSession(null);
+  };
+
+  const handleRefresh = () => {
+    fetchData();
+  };
+
   const getStyleIcon = (style: string) => {
     switch (style?.toLowerCase()) {
       case 'onsight':
@@ -141,6 +158,16 @@ export function RecentAscents() {
       default: return system;
     }
   };
+
+  if (selectedSession) {
+    return (
+      <SessionDetails 
+        session={selectedSession} 
+        onBack={handleBackFromDetails}
+        onRefresh={handleRefresh}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -180,7 +207,31 @@ export function RecentAscents() {
             ) : (
               <div className="space-y-4">
                 {sessions.map((session) => (
-                  <SessionCard key={session.id} session={session} />
+                  <div key={session.id} className="relative">
+                    <div 
+                      className="cursor-pointer"
+                      onClick={() => handleSessionClick(session)}
+                    >
+                      <SessionCard session={session} />
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DeleteSessionDialog sessionId={session.id} onSuccess={handleRefresh}>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Session
+                            </DropdownMenuItem>
+                          </DeleteSessionDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -196,8 +247,30 @@ export function RecentAscents() {
             ) : (
               <div className="space-y-4">
                 {ascents.map((ascent) => (
-                  <div key={ascent.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                    <div className="flex justify-between items-start mb-3">
+                  <div key={ascent.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors relative">
+                    <div className="absolute top-2 right-2">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DeleteClimbDialog 
+                            climbId={ascent.id} 
+                            climbName={ascent.routes.name}
+                            onSuccess={handleRefresh}
+                          >
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete Climb
+                            </DropdownMenuItem>
+                          </DeleteClimbDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    
+                    <div className="flex justify-between items-start mb-3 pr-8">
                       <div>
                         <h3 className="font-semibold text-lg">{ascent.routes.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
