@@ -7,7 +7,7 @@ import './index.css';
 // Import type declarations
 import './types/capacitor.d.ts';
 
-// Set up comprehensive Capacitor polyfill IMMEDIATELY
+// Enhanced Capacitor polyfill for better compatibility
 (function() {
   if (typeof window !== 'undefined') {
     // Ensure Capacitor object exists with all necessary methods
@@ -53,10 +53,14 @@ window.addEventListener('error', (event) => {
   }
 });
 
-// Initialize app after ensuring Capacitor is ready
+// Initialize app with better environment detection
 const initializeApp = () => {
-  console.log('Capacitor platform:', Capacitor.getPlatform());
-  console.log('Capacitor is native app:', Capacitor.isNativePlatform());
+  const isNative = Capacitor.isNativePlatform();
+  const platform = Capacitor.getPlatform();
+  
+  console.log('Capacitor platform:', platform);
+  console.log('Capacitor is native app:', isNative);
+  console.log('Environment:', process.env.NODE_ENV || 'production');
   
   // Ensure the root element exists
   const rootElement = document.getElementById('root');
@@ -72,25 +76,45 @@ const initializeApp = () => {
       </StrictMode>,
     );
     console.log('React app initialized successfully');
+    
+    // Log additional info for debugging
+    if (isNative) {
+      console.log('Running in native Capacitor app');
+    } else {
+      console.log('Running in web browser');
+    }
   } catch (error) {
     console.error('Error initializing React app:', error);
   }
 };
 
-// Enhanced initialization logic with Capacitor readiness check
+// Enhanced initialization with better readiness detection
 const startApp = () => {
-  // Add a small delay to ensure Capacitor is fully loaded
-  setTimeout(() => {
-    try {
-      console.log('Capacitor object available:', typeof Capacitor !== 'undefined');
-      console.log('Running in native Capacitor environment:', Capacitor.isNativePlatform());
+  // For native apps, wait for deviceready event
+  if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    document.addEventListener('deviceready', () => {
+      console.log('Capacitor device ready event fired');
       initializeApp();
-    } catch (error) {
-      console.error('Error during Capacitor check:', error);
-      // Fallback to initialize anyway
+    }, false);
+    
+    // Fallback timeout in case deviceready doesn't fire
+    setTimeout(() => {
+      console.log('Fallback initialization after timeout');
       initializeApp();
-    }
-  }, 200);
+    }, 3000);
+  } else {
+    // For web, start immediately with a small delay
+    setTimeout(() => {
+      try {
+        console.log('Capacitor object available:', typeof Capacitor !== 'undefined');
+        initializeApp();
+      } catch (error) {
+        console.error('Error during Capacitor check:', error);
+        // Fallback to initialize anyway
+        initializeApp();
+      }
+    }, 100);
+  }
 };
 
 // Wait for DOM to be ready
