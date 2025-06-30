@@ -6,8 +6,22 @@ import { toast } from 'sonner';
 type ClimbType = 'sport' | 'trad' | 'boulder' | 'aid' | 'mixed' | 'ice';
 
 export class RouteSeedService {
-  // Popular climbing areas to seed data from
+  // Popular climbing areas to seed data from - including Swedish areas for primary market
   private static readonly POPULAR_AREAS = [
+    // Swedish climbing areas (primary market)
+    'Bohuslän',
+    'Kullaberg',
+    'Stora Blå',
+    'Ramnefjellet',
+    'Höga Kusten',
+    'Göteborg',
+    'Stockholm',
+    'Växjö',
+    'Jönköping',
+    'Malmö',
+    'Sigtuna',
+    'Sörmland',
+    // Popular international areas
     'Yosemite Valley',
     'Joshua Tree',
     'Red River Gorge',
