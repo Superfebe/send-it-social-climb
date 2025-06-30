@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,7 +63,11 @@ export function RouteList({ filters }: RouteListProps) {
       }
       
       if (filters.climbType) {
-        query = query.eq('climb_type', filters.climbType);
+        // Validate that climbType is a valid enum value before using it
+        const validClimbTypes = ['sport', 'trad', 'boulder', 'aid', 'mixed', 'ice'];
+        if (validClimbTypes.includes(filters.climbType)) {
+          query = query.eq('climb_type', filters.climbType as 'sport' | 'trad' | 'boulder' | 'aid' | 'mixed' | 'ice');
+        }
       }
 
       const { data, error } = await query.limit(50);
