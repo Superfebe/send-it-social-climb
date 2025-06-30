@@ -28,7 +28,9 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
   });
 
   const handleFilterChange = (key: keyof SearchFilters, value: string) => {
-    const newFilters = { ...filters, [key]: value };
+    // Convert "all" values back to empty strings for the actual filter
+    const actualValue = value === 'all' ? '' : value;
+    const newFilters = { ...filters, [key]: actualValue };
     setFilters(newFilters);
     onSearch(newFilters);
   };
@@ -62,12 +64,12 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
 
       {/* Filters Row */}
       <div className="flex flex-wrap gap-2">
-        <Select value={filters.climbType} onValueChange={(value) => handleFilterChange('climbType', value)}>
+        <Select value={filters.climbType || 'all'} onValueChange={(value) => handleFilterChange('climbType', value)}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Types</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="sport">Sport</SelectItem>
             <SelectItem value="trad">Trad</SelectItem>
             <SelectItem value="boulder">Boulder</SelectItem>
@@ -77,12 +79,12 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
           </SelectContent>
         </Select>
 
-        <Select value={filters.gradeMin} onValueChange={(value) => handleFilterChange('gradeMin', value)}>
+        <Select value={filters.gradeMin || 'all'} onValueChange={(value) => handleFilterChange('gradeMin', value)}>
           <SelectTrigger className="w-[100px]">
             <SelectValue placeholder="Min" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Any</SelectItem>
+            <SelectItem value="all">Any</SelectItem>
             <SelectItem value="5.6">5.6</SelectItem>
             <SelectItem value="5.7">5.7</SelectItem>
             <SelectItem value="5.8">5.8</SelectItem>
@@ -99,12 +101,12 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
           </SelectContent>
         </Select>
 
-        <Select value={filters.gradeMax} onValueChange={(value) => handleFilterChange('gradeMax', value)}>
+        <Select value={filters.gradeMax || 'all'} onValueChange={(value) => handleFilterChange('gradeMax', value)}>
           <SelectTrigger className="w-[100px]">
             <SelectValue placeholder="Max" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Any</SelectItem>
+            <SelectItem value="all">Any</SelectItem>
             <SelectItem value="5.6">5.6</SelectItem>
             <SelectItem value="5.7">5.7</SelectItem>
             <SelectItem value="5.8">5.8</SelectItem>
