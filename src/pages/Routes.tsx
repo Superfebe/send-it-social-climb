@@ -1,11 +1,26 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Mountain, Star, Search, MapPin } from 'lucide-react';
+import { Mountain, Star, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MobileLayout } from '@/components/MobileLayout';
+import { RouteSearch, SearchFilters } from '@/components/RouteSearch';
+import { RouteList } from '@/components/RouteList';
 
 export default function RoutesPage() {
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    query: '',
+    climbType: '',
+    gradeMin: '',
+    gradeMax: '',
+    area: ''
+  });
+
+  const handleSearch = (filters: SearchFilters) => {
+    setSearchFilters(filters);
+  };
+
   return (
     <MobileLayout title="Routes">
       <div className="p-4 space-y-4">
@@ -22,36 +37,10 @@ export default function RoutesPage() {
           </TabsList>
 
           <TabsContent value="browse">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-base">
-                  <Search className="h-4 w-4 mr-2" />
-                  Browse Routes
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Discover new climbing routes in your area and beyond
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Mountain className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-base font-medium text-gray-900 mb-2">Route Database Coming Soon</h3>
-                  <p className="text-sm text-gray-500 mb-6 px-4">
-                    We're building a comprehensive database of climbing routes from around the world.
-                  </p>
-                  <div className="space-y-3">
-                    <Button className="w-full">
-                      <Search className="h-4 w-4 mr-2" />
-                      Search Routes by Area
-                    </Button>
-                    <Button variant="outline" className="w-full">
-                      <Mountain className="h-4 w-4 mr-2" />
-                      Filter by Difficulty
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-4">
+              <RouteSearch onSearch={handleSearch} />
+              <RouteList filters={searchFilters} />
+            </div>
           </TabsContent>
 
           <TabsContent value="wishlist">
