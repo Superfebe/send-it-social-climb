@@ -13,6 +13,7 @@ import { Plus, Mountain } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { AscentMediaUpload } from './AscentMediaUpload';
 
 const formSchema = z.object({
   routeName: z.string().optional(),
@@ -44,6 +45,7 @@ const gradeOptions = {
 export function LogClimbForm({ onSuccess, sessionId }: LogClimbFormProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [createdAscentId, setCreatedAscentId] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -172,7 +174,7 @@ export function LogClimbForm({ onSuccess, sessionId }: LogClimbFormProps) {
 
       // Finally, create the ascent
       console.log('Creating ascent for route:', routeId);
-      const { error: ascentError } = await supabase
+      const { data: ascentData, error: ascentError } = await supabase
         .from('ascents')
         .insert({
           user_id: user.id,
@@ -183,20 +185,21 @@ export function LogClimbForm({ onSuccess, sessionId }: LogClimbFormProps) {
           attempts: data.attempts,
           notes: data.notes || null,
           rating: null,
-        });
+        })
+        .select('id')
+        .single();
 
       if (ascentError) throw ascentError;
 
       console.log('Successfully logged climb!');
+      setCreatedAscentId(ascentData.id);
 
       toast({
         title: 'Climb logged successfully!',
         description: `${finalRouteName} (${data.grade}) has been added to your climbing log.`,
       });
 
-      form.reset();
-      setOpen(false);
-      onSuccess?.();
+      // Don't reset form or close dialog yet - let user add media
     } catch (error) {
       console.error('Error logging climb:', error);
       toast({
@@ -207,6 +210,13 @@ export function LogClimbForm({ onSuccess, sessionId }: LogClimbFormProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    form.reset();
+    setCreatedAscentId(null);
+    setOpen(false);
+    onSuccess?.();
   };
 
   return (
@@ -228,142 +238,93 @@ export function LogClimbForm({ onSuccess, sessionId }: LogClimbFormProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="areaName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Smith Rock, Local Gym" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+        {!createdAscentId ? (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="climbType"
+                name="areaName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Discipline</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="sport">Sport</SelectItem>
-                        <SelectItem value="trad">Trad</SelectItem>
-                        <SelectItem value="boulder">Boulder</SelectItem>
-                        <SelectItem value="aid">Aid</SelectItem>
-                        <SelectItem value="mixed">Mixed</SelectItem>
-                        <SelectItem value="ice">Ice</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="difficultySystem"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grade System</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="yds">YDS (5.10a)</SelectItem>
-                        <SelectItem value="french">French (6a)</SelectItem>
-                        <SelectItem value="v_scale">V-Scale (V5)</SelectItem>
-                        <SelectItem value="uiaa">UIAA (VII)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="grade"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Grade</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormLabel>Location</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select grade" />
-                      </SelectTrigger>
+                      <Input placeholder="e.g., Smith Rock, Local Gym" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {gradeOptions[selectedDifficultySystem].map((grade) => (
-                        <SelectItem key={grade} value={grade}>
-                          {grade}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            <FormField
-              control={form.control}
-              name="routeName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Route Name {selectedClimbType === 'boulder' ? '(Optional for gym bouldering)' : ''}
-                  </FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder={
-                        selectedClimbType === 'boulder' 
-                          ? "Leave empty for auto-naming" 
-                          : "e.g., Crimpy McFace"
-                      } 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="climbType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Discipline</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="sport">Sport</SelectItem>
+                          <SelectItem value="trad">Trad</SelectItem>
+                          <SelectItem value="boulder">Boulder</SelectItem>
+                          <SelectItem value="aid">Aid</SelectItem>
+                          <SelectItem value="mixed">Mixed</SelectItem>
+                          <SelectItem value="ice">Ice</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="difficultySystem"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Grade System</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="yds">YDS (5.10a)</SelectItem>
+                          <SelectItem value="french">French (6a)</SelectItem>
+                          <SelectItem value="v_scale">V-Scale (V5)</SelectItem>
+                          <SelectItem value="uiaa">UIAA (VII)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               <FormField
                 control={form.control}
-                name="style"
+                name="grade"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Style (optional)</FormLabel>
+                    <FormLabel>Grade</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select style" />
+                          <SelectValue placeholder="Select grade" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="onsight">Onsight</SelectItem>
-                        <SelectItem value="flash">Flash</SelectItem>
-                        <SelectItem value="redpoint">Redpoint</SelectItem>
-                        <SelectItem value="toprope">Top Rope</SelectItem>
-                        <SelectItem value="hangdog">Hangdog</SelectItem>
-                        <SelectItem value="attempt">Attempt</SelectItem>
+                        {gradeOptions[selectedDifficultySystem].map((grade) => (
+                          <SelectItem key={grade} value={grade}>
+                            {grade}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -373,61 +334,131 @@ export function LogClimbForm({ onSuccess, sessionId }: LogClimbFormProps) {
 
               <FormField
                 control={form.control}
-                name="attempts"
+                name="routeName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Attempts</FormLabel>
+                    <FormLabel>
+                      Route Name {selectedClimbType === 'boulder' ? '(Optional for gym bouldering)' : ''}
+                    </FormLabel>
                     <FormControl>
                       <Input 
-                        type="number" 
-                        min="1" 
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                        placeholder={
+                          selectedClimbType === 'boulder' 
+                            ? "Leave empty for auto-naming" 
+                            : "e.g., Crimpy McFace"
+                        } 
+                        {...field} 
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="style"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Style (optional)</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select style" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="onsight">Onsight</SelectItem>
+                          <SelectItem value="flash">Flash</SelectItem>
+                          <SelectItem value="redpoint">Redpoint</SelectItem>
+                          <SelectItem value="toprope">Top Rope</SelectItem>
+                          <SelectItem value="hangdog">Hangdog</SelectItem>
+                          <SelectItem value="attempt">Attempt</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="attempts"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Attempts</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="dateClimbed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Date Climbed</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes (optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="How did it feel? Any beta or conditions to note?"
+                        className="min-h-[60px]"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Logging Climb...' : 'Log Climb'}
+              </Button>
+            </form>
+          </Form>
+        ) : (
+          <div className="space-y-4">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-green-600">Climb Logged!</h3>
+              <p className="text-sm text-gray-600">Would you like to add a video or photo?</p>
             </div>
-
-            <FormField
-              control={form.control}
-              name="dateClimbed"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date Climbed</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <AscentMediaUpload 
+              ascentId={createdAscentId} 
+              onMediaUploaded={() => {
+                toast({
+                  title: 'Media uploaded!',
+                  description: 'Your climb media has been attached.',
+                });
+              }} 
             />
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (optional)</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="How did it feel? Any beta or conditions to note?"
-                      className="min-h-[60px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logging Climb...' : 'Log Climb'}
+            <Button onClick={handleClose} className="w-full">
+              Done
             </Button>
-          </form>
-        </Form>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
