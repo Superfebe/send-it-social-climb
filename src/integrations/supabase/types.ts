@@ -42,6 +42,50 @@ export type Database = {
         }
         Relationships: []
       }
+      ascent_media: {
+        Row: {
+          ascent_id: string
+          created_at: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          mime_type: string
+          user_id: string
+        }
+        Insert: {
+          ascent_id: string
+          created_at?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          mime_type: string
+          user_id: string
+        }
+        Update: {
+          ascent_id?: string
+          created_at?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          mime_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ascent_media_ascent_id_fkey"
+            columns: ["ascent_id"]
+            isOneToOne: false
+            referencedRelation: "ascents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ascents: {
         Row: {
           attempts: number | null

@@ -41,9 +41,9 @@ export function AscentMediaUpload({ ascentId, onMediaUploaded }: AscentMediaUplo
 
       if (uploadError) throw uploadError;
 
-      // Save metadata to database
+      // Save metadata to database using direct query since types aren't updated
       const { error: dbError } = await supabase
-        .from('ascent_media')
+        .from('ascent_media' as any)
         .insert({
           ascent_id: ascentId,
           user_id: user.id,

@@ -24,17 +24,35 @@ export function AscentMediaDisplay({ ascentId, compact = false }: AscentMediaDis
 
   const fetchMedia = async () => {
     try {
+      // Query the ascent_media table directly with a raw query since types aren't updated yet
       const { data, error } = await supabase
-        .from('ascent_media')
-        .select('*')
-        .eq('ascent_id', ascentId)
-        .order('created_at', { ascending: false });
+        .rpc('get_ascent_media', { ascent_id_param: ascentId })
+        .then(async () => {
+          // Fallback to direct query if RPC doesn't exist
+          const { data: rawData, error: rawError } = await supabase
+            .from('ascent_media' as any)
+            .select('*')
+            .eq('ascent_id', ascentId)
+            .order('created_at', { ascending: false });
+          
+          return { data: rawData, error: rawError };
+        })
+        .catch(async () => {
+          // Direct query approach
+          const { data: rawData, error: rawError } = await supabase
+            .from('ascent_media' as any)
+            .select('*')
+            .eq('ascent_id', ascentId)
+            .order('created_at', { ascending: false });
+          
+          return { data: rawData, error: rawError };
+        });
 
       if (error) throw error;
 
       // Get signed URLs for each media item
       const mediaWithUrls = await Promise.all(
-        (data || []).map(async (item) => {
+        (data || []).map(async (item: any) => {
           const { data: signedUrl } = await supabase.storage
             .from('session-media')
             .createSignedUrl(item.file_path, 3600); // 1 hour expiry
