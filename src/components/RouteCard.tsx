@@ -1,5 +1,5 @@
 
-import { Star, MapPin, Mountain, Plus } from 'lucide-react';
+import { Star, MapPin, Mountain, Plus, Globe, Database } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ interface Route {
   description?: string;
   length_meters?: number;
   pitches?: number;
+  source?: string;
 }
 
 interface RouteCardProps {
@@ -29,7 +30,15 @@ export function RouteCard({ route, onAddToWishlist, isInWishlist }: RouteCardPro
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
-            <h3 className="font-semibold text-base mb-1">{route.name}</h3>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-base">{route.name}</h3>
+              {route.source === 'openbeta' && (
+                <Globe className="h-3 w-3 text-blue-500" title="OpenBeta" />
+              )}
+              {!route.source && (
+                <Database className="h-3 w-3 text-gray-500" title="Local" />
+              )}
+            </div>
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="outline" className="text-xs">
                 {route.grade}

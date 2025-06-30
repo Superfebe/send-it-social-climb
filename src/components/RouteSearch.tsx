@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
-import { Search, Filter, MapPin, Mountain } from 'lucide-react';
+import { Search, Filter, MapPin, Mountain, Download, Globe } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { RouteImportService } from '@/services/routeImportService';
 
 interface RouteSearchProps {
   onSearch: (filters: SearchFilters) => void;
@@ -26,6 +27,8 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
     gradeMax: '',
     area: ''
   });
+  
+  const [isImporting, setIsImporting] = useState(false);
 
   const handleFilterChange = (key: keyof SearchFilters, value: string) => {
     // Convert "all" values back to empty strings for the actual filter
@@ -47,6 +50,21 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
     onSearch(clearedFilters);
   };
 
+  const handleImportFromOpenBeta = async () => {
+    if (!filters.query.trim()) {
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      await RouteImportService.importRoutesFromOpenBeta(filters.query);
+      // Refresh the search results
+      onSearch(filters);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const hasActiveFilters = Object.values(filters).some(value => value !== '');
 
   return (
@@ -61,6 +79,26 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
           className="pl-10"
         />
       </div>
+
+      {/* Import Button */}
+      {filters.query && (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleImportFromOpenBeta}
+            disabled={isImporting}
+            className="flex items-center gap-2"
+          >
+            {isImporting ? (
+              <Download className="h-4 w-4 animate-spin" />
+            ) : (
+              <Globe className="h-4 w-4" />
+            )}
+            {isImporting ? 'Importing...' : 'Import from OpenBeta'}
+          </Button>
+        </div>
+      )}
 
       {/* Filters Row */}
       <div className="flex flex-wrap gap-2">

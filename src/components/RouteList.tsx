@@ -17,6 +17,7 @@ interface Route {
   description?: string;
   length_meters?: number;
   pitches?: number;
+  source?: string;
 }
 
 interface RouteListProps {
@@ -49,6 +50,7 @@ export function RouteList({ filters }: RouteListProps) {
           description,
           length_meters,
           pitches,
+          source,
           areas (
             name
           )
