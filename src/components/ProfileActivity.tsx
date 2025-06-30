@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, MapPin, Clock, Mountain, Activity } from 'lucide-react';
 import { SessionComments } from '@/components/SessionComments';
+import { SessionMediaDisplay } from '@/components/SessionMediaDisplay';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Session {
@@ -231,6 +232,8 @@ export function ProfileActivity() {
               {session.notes && (
                 <p className="text-gray-700 mb-4">{session.notes}</p>
               )}
+
+              <SessionMediaDisplay sessionId={session.id} />
 
               {session.ascents && session.ascents.length > 0 && (
                 <div className="mb-4">

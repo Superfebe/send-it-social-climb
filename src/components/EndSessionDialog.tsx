@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { SessionMediaUpload } from '@/components/SessionMediaUpload';
 
 const formSchema = z.object({
   notes: z.string().optional(),
@@ -123,13 +123,18 @@ export function EndSessionDialog({ open, onOpenChange, session, onSessionEnded }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>End Session</DialogTitle>
           <DialogDescription>
-            Review your session and add any notes
+            Add photos/videos and review your session
           </DialogDescription>
         </DialogHeader>
+
+        <SessionMediaUpload 
+          sessionId={session.id} 
+          onMediaUploaded={() => {}}
+        />
 
         <Card>
           <CardContent className="pt-6">

@@ -7,6 +7,7 @@ import { Heart, MessageCircle, MapPin, Clock, Mountain, Activity } from 'lucide-
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { SessionComments } from '@/components/SessionComments';
+import { SessionMediaDisplay } from '@/components/SessionMediaDisplay';
 import { formatDistanceToNow } from 'date-fns';
 
 interface FeedSession {
@@ -252,6 +253,8 @@ export function SocialFeed() {
               {session.notes && (
                 <p className="text-gray-700 mb-4">{session.notes}</p>
               )}
+
+              <SessionMediaDisplay sessionId={session.id} />
 
               {session.ascents && session.ascents.length > 0 && (
                 <div className="mb-4">
