@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,7 +61,8 @@ export function RouteList({ filters }: RouteListProps) {
       }
       
       if (filters.climbType) {
-        query = query.eq('climb_type', filters.climbType);
+        // Cast the string to the proper type for the database query
+        query = query.eq('climb_type', filters.climbType as any);
       }
 
       const { data, error } = await query.limit(50);

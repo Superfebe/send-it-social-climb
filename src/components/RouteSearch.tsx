@@ -72,6 +72,8 @@ export function RouteSearch({ onSearch }: RouteSearchProps) {
             <SelectItem value="trad">Trad</SelectItem>
             <SelectItem value="boulder">Boulder</SelectItem>
             <SelectItem value="mixed">Mixed</SelectItem>
+            <SelectItem value="aid">Aid</SelectItem>
+            <SelectItem value="ice">Ice</SelectItem>
           </SelectContent>
         </Select>
 
