@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
@@ -23,25 +24,12 @@ export function AscentMediaDisplay({ ascentId, compact = false }: AscentMediaDis
 
   const fetchMedia = async () => {
     try {
-      // Use direct SQL query to avoid TypeScript issues with the new table
-      const { data, error } = await supabase.rpc('exec_sql', {
-        query: `
-          SELECT id, file_path, file_name, file_type, mime_type, created_at
-          FROM ascent_media 
-          WHERE ascent_id = $1 
-          ORDER BY created_at DESC
-        `,
-        params: [ascentId]
-      }).catch(async () => {
-        // Fallback to direct table access if RPC doesn't work
-        const result = await supabase
-          .from('ascent_media' as any)
-          .select('*')
-          .eq('ascent_id', ascentId)
-          .order('created_at', { ascending: false });
-        
-        return result;
-      });
+      // Use type assertion to bypass TypeScript issues with the new table
+      const { data, error } = await (supabase as any)
+        .from('ascent_media')
+        .select('*')
+        .eq('ascent_id', ascentId)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Database error:', error);
