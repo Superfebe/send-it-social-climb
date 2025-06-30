@@ -24,49 +24,62 @@ export function AscentMediaDisplay({ ascentId, compact = false }: AscentMediaDis
 
   const fetchMedia = async () => {
     try {
-      // Query the ascent_media table directly with a raw query since types aren't updated yet
+      // Direct query using raw SQL to avoid TypeScript issues
       const { data, error } = await supabase
-        .rpc('get_ascent_media', { ascent_id_param: ascentId })
-        .then(async () => {
-          // Fallback to direct query if RPC doesn't exist
-          const { data: rawData, error: rawError } = await supabase
-            .from('ascent_media' as any)
-            .select('*')
-            .eq('ascent_id', ascentId)
-            .order('created_at', { ascending: false });
-          
-          return { data: rawData, error: rawError };
+        .rpc('exec_sql', { 
+          query: `
+            SELECT id, file_path, file_name, file_type, mime_type, created_at
+            FROM ascent_media 
+            WHERE ascent_id = $1 
+            ORDER BY created_at DESC
+          `,
+          params: [ascentId]
         })
-        .catch(async () => {
-          // Direct query approach
-          const { data: rawData, error: rawError } = await supabase
-            .from('ascent_media' as any)
-            .select('*')
-            .eq('ascent_id', ascentId)
-            .order('created_at', { ascending: false });
-          
-          return { data: rawData, error: rawError };
+        .then(async (result) => {
+          // Fallback to direct table access if RPC doesn't work
+          if (result.error) {
+            // Use any type to bypass TypeScript checking for the new table
+            return await (supabase as any)
+              .from('ascent_media')
+              .select('*')
+              .eq('ascent_id', ascentId)
+              .order('created_at', { ascending: false });
+          }
+          return result;
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        setMedia([]);
+        return;
+      }
 
       // Get signed URLs for each media item
       const mediaWithUrls = await Promise.all(
         (data || []).map(async (item: any) => {
-          const { data: signedUrl } = await supabase.storage
-            .from('session-media')
-            .createSignedUrl(item.file_path, 3600); // 1 hour expiry
+          try {
+            const { data: signedUrl } = await supabase.storage
+              .from('session-media')
+              .createSignedUrl(item.file_path, 3600); // 1 hour expiry
 
-          return {
-            ...item,
-            url: signedUrl?.signedUrl
-          };
+            return {
+              ...item,
+              url: signedUrl?.signedUrl
+            };
+          } catch (urlError) {
+            console.error('Error creating signed URL:', urlError);
+            return {
+              ...item,
+              url: undefined
+            };
+          }
         })
       );
 
       setMedia(mediaWithUrls);
     } catch (error) {
       console.error('Error fetching media:', error);
+      setMedia([]);
     } finally {
       setLoading(false);
     }
@@ -86,7 +99,7 @@ export function AscentMediaDisplay({ ascentId, compact = false }: AscentMediaDis
           <Dialog key={item.id}>
             <DialogTrigger asChild>
               <div className="relative w-8 h-8 bg-gray-100 rounded overflow-hidden cursor-pointer flex-shrink-0">
-                {item.file_type === 'image' ? (
+                {item.file_type === 'image' && item.url ? (
                   <img
                     src={item.url}
                     alt={item.file_name}
@@ -101,18 +114,20 @@ export function AscentMediaDisplay({ ascentId, compact = false }: AscentMediaDis
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] p-0">
               <div className="relative w-full h-full flex items-center justify-center bg-black">
-                {item.file_type === 'image' ? (
+                {item.file_type === 'image' && item.url ? (
                   <img
                     src={item.url}
                     alt={item.file_name}
                     className="max-w-full max-h-full object-contain"
                   />
-                ) : (
+                ) : item.url ? (
                   <video
                     src={item.url}
                     controls
                     className="max-w-full max-h-full"
                   />
+                ) : (
+                  <div className="text-white">Media not available</div>
                 )}
               </div>
             </DialogContent>
@@ -135,7 +150,7 @@ export function AscentMediaDisplay({ ascentId, compact = false }: AscentMediaDis
           <Dialog key={item.id}>
             <DialogTrigger asChild>
               <div className="relative w-16 h-16 bg-gray-100 rounded-lg overflow-hidden cursor-pointer flex-shrink-0 group">
-                {item.file_type === 'image' ? (
+                {item.file_type === 'image' && item.url ? (
                   <img
                     src={item.url}
                     alt={item.file_name}
@@ -157,18 +172,20 @@ export function AscentMediaDisplay({ ascentId, compact = false }: AscentMediaDis
             </DialogTrigger>
             <DialogContent className="max-w-4xl max-h-[90vh] p-0">
               <div className="relative w-full h-full flex items-center justify-center bg-black">
-                {item.file_type === 'image' ? (
+                {item.file_type === 'image' && item.url ? (
                   <img
                     src={item.url}
                     alt={item.file_name}
                     className="max-w-full max-h-full object-contain"
                   />
-                ) : (
+                ) : item.url ? (
                   <video
                     src={item.url}
                     controls
                     className="max-w-full max-h-full"
                   />
+                ) : (
+                  <div className="text-white">Media not available</div>
                 )}
               </div>
             </DialogContent>

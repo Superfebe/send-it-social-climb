@@ -41,9 +41,9 @@ export function AscentMediaUpload({ ascentId, onMediaUploaded }: AscentMediaUplo
 
       if (uploadError) throw uploadError;
 
-      // Save metadata to database using direct query since types aren't updated
-      const { error: dbError } = await supabase
-        .from('ascent_media' as any)
+      // Save metadata to database using type assertion to bypass TypeScript issues
+      const { error: dbError } = await (supabase as any)
+        .from('ascent_media')
         .insert({
           ascent_id: ascentId,
           user_id: user.id,
@@ -57,8 +57,8 @@ export function AscentMediaUpload({ ascentId, onMediaUploaded }: AscentMediaUplo
       if (dbError) throw dbError;
 
       toast({
-        title: 'Video uploaded successfully',
-        description: 'Your climb video has been attached.',
+        title: 'Media uploaded successfully',
+        description: 'Your climb media has been attached.',
       });
 
       setSelectedFile(null);
