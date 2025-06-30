@@ -33,10 +33,20 @@ export function RouteCard({ route, onAddToWishlist, isInWishlist }: RouteCardPro
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-semibold text-base">{route.name}</h3>
               {route.source === 'openbeta' && (
-                <Globe className="h-3 w-3 text-blue-500" title="OpenBeta" />
+                <div className="relative group">
+                  <Globe className="h-3 w-3 text-blue-500" />
+                  <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                    OpenBeta
+                  </span>
+                </div>
               )}
               {!route.source && (
-                <Database className="h-3 w-3 text-gray-500" title="Local" />
+                <div className="relative group">
+                  <Database className="h-3 w-3 text-gray-500" />
+                  <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-black rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                    Local
+                  </span>
+                </div>
               )}
             </div>
             <div className="flex items-center gap-2 mb-2">
@@ -44,7 +54,7 @@ export function RouteCard({ route, onAddToWishlist, isInWishlist }: RouteCardPro
                 {route.grade}
               </Badge>
               <Badge variant="secondary" className="text-xs capitalize">
-                {route.climb_type}
+                {route.climb_type.replace('_', ' ')}
               </Badge>
             </div>
           </div>

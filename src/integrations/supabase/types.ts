@@ -164,11 +164,14 @@ export type Database = {
           created_by: string | null
           description: string | null
           difficulty_system: Database["public"]["Enums"]["difficulty_system"]
+          external_id: string | null
           grade: string
           id: string
+          last_synced: string | null
           length_meters: number | null
           name: string
           pitches: number | null
+          source: string | null
         }
         Insert: {
           area_id?: string | null
@@ -177,11 +180,14 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           difficulty_system?: Database["public"]["Enums"]["difficulty_system"]
+          external_id?: string | null
           grade: string
           id?: string
+          last_synced?: string | null
           length_meters?: number | null
           name: string
           pitches?: number | null
+          source?: string | null
         }
         Update: {
           area_id?: string | null
@@ -190,11 +196,14 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           difficulty_system?: Database["public"]["Enums"]["difficulty_system"]
+          external_id?: string | null
           grade?: string
           id?: string
+          last_synced?: string | null
           length_meters?: number | null
           name?: string
           pitches?: number | null
+          source?: string | null
         }
         Relationships: [
           {

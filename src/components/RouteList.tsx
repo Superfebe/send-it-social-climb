@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -63,8 +64,7 @@ export function RouteList({ filters }: RouteListProps) {
       }
       
       if (filters.climbType) {
-        // Cast the string to the proper type for the database query
-        query = query.eq('climb_type', filters.climbType as any);
+        query = query.eq('climb_type', filters.climbType);
       }
 
       const { data, error } = await query.limit(50);
@@ -72,12 +72,14 @@ export function RouteList({ filters }: RouteListProps) {
       if (error) {
         console.error('Error fetching routes:', error);
         toast.error('Failed to load routes');
+        setRoutes([]);
       } else {
         setRoutes(data || []);
       }
     } catch (error) {
       console.error('Error fetching routes:', error);
       toast.error('Failed to load routes');
+      setRoutes([]);
     }
     setLoading(false);
   };

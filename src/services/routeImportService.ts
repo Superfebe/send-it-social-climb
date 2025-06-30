@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { OpenBetaService, OpenBetaRoute } from './openBetaService';
 import { toast } from 'sonner';
 
+type ClimbType = 'sport' | 'trad' | 'boulder' | 'aid' | 'mixed' | 'ice';
+
 export class RouteImportService {
   static async importRoutesFromOpenBeta(searchQuery: string): Promise<number> {
     try {
@@ -23,7 +25,7 @@ export class RouteImportService {
             .select('id')
             .eq('name', route.name)
             .eq('external_id', route.id)
-            .single();
+            .maybeSingle();
 
           if (existingRoute) {
             continue; // Skip if already imported
@@ -84,7 +86,7 @@ export class RouteImportService {
       .from('areas')
       .select('id')
       .eq('name', areaData.area_name)
-      .single();
+      .maybeSingle();
 
     if (existingArea) {
       return existingArea.id;
@@ -110,7 +112,7 @@ export class RouteImportService {
     return newArea.id;
   }
 
-  private static getClimbType(typeObj: any): string {
+  private static getClimbType(typeObj: any): ClimbType {
     if (typeObj.sport) return 'sport';
     if (typeObj.trad) return 'trad';
     if (typeObj.boulder) return 'boulder';
