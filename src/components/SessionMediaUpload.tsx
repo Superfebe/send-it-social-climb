@@ -24,21 +24,35 @@ export function SessionMediaUpload({ sessionId, onMediaUploaded }: SessionMediaU
   };
 
   const uploadFiles = async () => {
-    if (!user || selectedFiles.length === 0) return;
+    console.log('Starting upload process', { user: !!user, fileCount: selectedFiles.length, sessionId });
+    
+    if (!user || selectedFiles.length === 0) {
+      console.log('Upload aborted:', { user: !!user, fileCount: selectedFiles.length });
+      return;
+    }
 
     setUploading(true);
     
     try {
       for (const file of selectedFiles) {
+        console.log('Processing file:', file.name, file.type, file.size);
+        
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${sessionId}/${Date.now()}.${fileExt}`;
+        
+        console.log('Uploading to storage:', fileName);
         
         // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from('session-media')
           .upload(fileName, file);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error('Storage upload error:', uploadError);
+          throw uploadError;
+        }
+
+        console.log('Storage upload successful, saving to database');
 
         // Save metadata to database
         const { error: dbError } = await supabase
@@ -53,7 +67,12 @@ export function SessionMediaUpload({ sessionId, onMediaUploaded }: SessionMediaU
             file_size: file.size
           });
 
-        if (dbError) throw dbError;
+        if (dbError) {
+          console.error('Database insert error:', dbError);
+          throw dbError;
+        }
+        
+        console.log('File upload completed successfully:', file.name);
       }
 
       toast({
